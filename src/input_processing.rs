@@ -1,6 +1,7 @@
+use crate::request::{make_authenticated_request, OpenAiResponse};
 use std::io::{Read, Result, Write};
 
-pub fn process_input<R: Read, W: Write>(
+pub fn chunk_process_input<R: Read, W: Write>(
     input: &mut R,
     output: &mut W,
     prefix: &str,
@@ -31,6 +32,35 @@ pub fn process_input<R: Read, W: Write>(
     Ok(())
 }
 
+pub fn process_input_with_request<R: Read, W: Write>(
+    input: &mut R,
+    output: &mut W,
+    prefix: &str,
+    suffix: &str,
+) -> Result<()> {
+    let mut buffer = Vec::new();
+    input.read_to_end(&mut buffer)?;
+
+    // nothing to do if no input
+    if buffer.is_empty() {
+        return Ok(());
+    }
+
+    let input = String::from_utf8(buffer).unwrap();
+
+    let mut result = String::from(prefix);
+    result.push_str(&input);
+    result.push_str(suffix);
+
+    let response: OpenAiResponse = make_authenticated_request(&result).unwrap().into_json()?;
+
+    println!("{}", response.choices.first().unwrap().message.content);
+
+    output.write_all(suffix.as_bytes())?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -43,7 +73,8 @@ mod tests {
                 let input = $input.as_bytes();
                 let mut output = std::io::Cursor::new(Vec::new());
 
-                let result = process_input(&mut Cursor::new(input), &mut output, $prefix, $suffix);
+                let result =
+                    chunk_process_input(&mut Cursor::new(input), &mut output, $prefix, $suffix);
                 assert!(result.is_ok());
 
                 let expected_output = if !input.is_empty() {
