@@ -1,5 +1,4 @@
-use crate::config::get_api_key;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]
 pub struct Message {
@@ -32,24 +31,28 @@ pub struct OpenAiResponse {
     pub system_fingerprint: String,
 }
 
-pub fn make_authenticated_request(text: &str) -> Result<ureq::Response, ureq::Error> {
-    let api_key = get_api_key();
+pub fn make_authenticated_request(
+    api_key: &str,
+    data: impl Serialize,
+) -> Result<ureq::Response, ureq::Error> {
     println!("Trying to reach openai with {}", &api_key);
     ureq::post("https://api.openai.com/v1/chat/completions")
         .set("Content-Type", "application/json")
         .set("Authorization", &format!("Bearer {}", api_key))
-        .send_json(ureq::json!({
-        "model": "gpt-4-1106-preview",
-        "messages": [
-          {
-            "role": "system",
-            "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
-          },
-          {
-            "role": "user",
-            "content": text
-          }
-        ]
-        })
-    )
+        .send_json(data)
+    //     .send_json(ureq::json!(
+    //         {
+    //     "model": "gpt-4-1106-preview",
+    //     "messages": [
+    //       {
+    //         "role": "system",
+    //         "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+    //       },
+    //       {
+    //         "role": "user",
+    //         "content": data.messages.last().unwrap().content
+    //       }
+    //     ]
+    //     })
+    // )
 }

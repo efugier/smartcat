@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 toml = "*"
+clap = { version = "*", features = ["derive"] }
 ureq = { version="*", features = ["json"] }
 serde = { version = "*", features = ["derive"] }

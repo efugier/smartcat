@@ -2,7 +2,7 @@ use std::io::{Read, Write};
 use std::process::{Command, Stdio};
 
 #[test]
-fn test_program_integration() {
+fn test_io() {
     let hardcoded_prefix = "Hello, World!\n```\n";
     let hardcoded_suffix = "\n```\n";
     let input_data = "Input data";
@@ -10,6 +10,7 @@ fn test_program_integration() {
     // launch the program and get the streams
     let mut child = Command::new("cargo")
         .arg("run")
+        .arg("test")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
