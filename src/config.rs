@@ -2,7 +2,13 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
-use toml::Value;
+
+#[derive(Debug, Deserialize)]
+pub struct ServiceConfig {
+    #[serde(skip_serializing)] // internal use only
+    pub api_key: String,
+    pub url: String,
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Prompt {
@@ -32,20 +38,20 @@ fn resolve_config_path() -> PathBuf {
     }
 }
 
-pub fn get_api_key(service: &str) -> String {
+pub fn get_service_config(service: &str) -> ServiceConfig {
     let api_keys_path = resolve_config_path().join(API_KEYS_FILE);
     let content = fs::read_to_string(&api_keys_path)
         .unwrap_or_else(|error| panic!("Could not read file {:?}, {:?}", api_keys_path, error));
-    let value: Value = content.parse().expect("Failed to parse TOML");
 
-    // Extract the API key from the TOML table.
-    let api_key = value
-        .get("API_KEYS")
-        .expect("API_KEYS section not found")
-        .get(service)
-        .unwrap_or_else(|| panic!("No api key found for service {}.", &service));
+    let mut service_configs: HashMap<String, ServiceConfig> = toml::from_str(&content).unwrap();
 
-    api_key.to_string()
+    service_configs.remove(service).unwrap_or_else(|| {
+        panic!(
+            "Prompt {} not found, availables ones are: {:?}",
+            service,
+            service_configs.keys().collect::<Vec<_>>()
+        )
+    })
 }
 
 pub fn get_prompts() -> HashMap<String, Prompt> {

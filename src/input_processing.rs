@@ -1,4 +1,4 @@
-use crate::config::{get_api_key, Prompt, PLACEHOLDER_TOKEN};
+use crate::config::{get_service_config, Prompt, PLACEHOLDER_TOKEN};
 use crate::request::{make_authenticated_request, OpenAiResponse};
 use std::io::{Read, Result, Write};
 
@@ -51,8 +51,8 @@ pub fn process_input_with_request<R: Read, W: Write>(
     for message in prompt.messages.iter_mut() {
         message.content = message.content.replace(PLACEHOLDER_TOKEN, &input)
     }
-    let api_key = get_api_key(&prompt.service);
-    let response: OpenAiResponse = make_authenticated_request(&api_key, prompt)
+    let service_config = get_service_config(&prompt.service);
+    let response: OpenAiResponse = make_authenticated_request(service_config, prompt)
         .unwrap()
         .into_json()?;
 

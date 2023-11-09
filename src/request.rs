@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::config::ServiceConfig;
+
 #[derive(Debug, Deserialize)]
 pub struct Message {
     pub role: String,
@@ -32,13 +34,16 @@ pub struct OpenAiResponse {
 }
 
 pub fn make_authenticated_request(
-    api_key: &str,
+    service_config: ServiceConfig,
     data: impl Serialize,
 ) -> Result<ureq::Response, ureq::Error> {
-    println!("Trying to reach openai with {}", &api_key);
-    ureq::post("https://api.openai.com/v1/chat/completions")
+    println!("Trying to reach openai with {}", service_config.api_key);
+    ureq::post(&service_config.url)
         .set("Content-Type", "application/json")
-        .set("Authorization", &format!("Bearer {}", api_key))
+        .set(
+            "Authorization",
+            &format!("Bearer {}", service_config.api_key),
+        )
         .send_json(data)
     //     .send_json(ureq::json!(
     //         {
