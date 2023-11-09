@@ -20,35 +20,32 @@ mod config;
 )]
 struct Cli {
     /// prompt in the config to fetch
-    #[arg(group = "prompt_from_config")]
-    prompt: Option<String>,
+    #[arg(default_value_t = String::from("default"))]
+    prompt: String,
     #[command(flatten)]
     custom_prompt_args: CustomPrompt,
-    /// a system "config" message to send before the prompt
+    /// a system "config" message to send before the first user message
     #[arg(short, long)]
     system_message: Option<String>,
     /// which api to hit
-    #[arg(long, default_value_t = String::from("openai"))]
-    api: String,
-    #[arg(short, long, default_value_t = String::from("gpt-3.5-turbo"))]
+    #[arg(long)]
+    api: Option<String>,
+    #[arg(short, long)]
     /// which model (of the api) to use
-    model: String,
+    model: Option<String>,
     /// file to read input from
     #[arg(short, long)]
     file: Option<String>,
 }
 
 #[derive(Debug, Args)]
-#[group(id = "custom_prompt", conflicts_with = "prompt_from_config")]
+#[group(id = "custom_prompt")]
 struct CustomPrompt {
     /// custom prompt, incompatible with [PROMTP]
-    #[arg(short, long, group = "custom_prompt")]
+    #[arg(short, long)]
     command: Option<String>,
-    /// prefix to add before custom prompt
-    #[arg(short, long, group = "custom_prompt")]
-    before: Option<String>,
-    /// suffix to add after the imput and the custom prompt
-    #[arg(short, long, group = "custom_prompt")]
+    /// suffix to add after the input and the custom prompt
+    #[arg(short, long)]
     after: Option<String>,
 }
 
@@ -82,25 +79,21 @@ fn main() {
 
     let mut prompts = config::get_prompts();
 
-    let prompt = match args.prompt {
-        Some(prompt) => {
-            let available_prompts: Vec<&String> = prompts.keys().collect();
-            let prompt_not_found_error = format!(
-                "Prompt {} not found, availables ones are: {:?}",
-                &prompt, &available_prompts
-            );
-            prompts.remove(&prompt).expect(&prompt_not_found_error)
-        }
-        None => config::Prompt {
-            api: args.api,
-            model: args.model,
-            messages: Vec::new(),
-        },
-    };
+    let available_prompts: Vec<&String> = prompts.keys().collect();
+    let prompt_not_found_error = format!(
+        "Prompt {} not found, availables ones are: {:?}",
+        &args.prompt, &available_prompts
+    );
+    let prompt = prompts.remove(&args.prompt).expect(&prompt_not_found_error);
+    //     None => config::Prompt {
+    //         api: args.api,
+    //         model: args.model,
+    //         messages: Vec::new(),
+    //     },
+    // };
     let prompt = cutsom_prompt::customize_prompt(
         prompt,
         &args.custom_prompt_args.command,
-        &args.custom_prompt_args.before,
         &args.custom_prompt_args.after,
         &args.system_message,
     );
