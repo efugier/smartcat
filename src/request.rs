@@ -1,6 +1,8 @@
+use log::debug;
 use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
 
-use crate::config::ServiceConfig;
+use crate::config::ApiConfig;
 
 #[derive(Debug, Deserialize)]
 pub struct Message {
@@ -30,34 +32,17 @@ pub struct OpenAiResponse {
     pub model: String,
     pub choices: Vec<Choice>,
     pub usage: Usage,
-    pub system_fingerprint: String,
+    pub system_fingerprint: Option<String>,
 }
 
 pub fn make_authenticated_request(
-    service_config: ServiceConfig,
-    data: impl Serialize,
+    api_config: ApiConfig,
+    data: impl Serialize + Debug,
 ) -> Result<ureq::Response, ureq::Error> {
-    println!("Trying to reach openai with {}", service_config.api_key);
-    ureq::post(&service_config.url)
+    debug!("Trying to reach openai with {}", api_config.api_key);
+    debug!("request content: {:?}", data);
+    ureq::post(&api_config.url)
         .set("Content-Type", "application/json")
-        .set(
-            "Authorization",
-            &format!("Bearer {}", service_config.api_key),
-        )
+        .set("Authorization", &format!("Bearer {}", api_config.api_key))
         .send_json(data)
-    //     .send_json(ureq::json!(
-    //         {
-    //     "model": "gpt-4-1106-preview",
-    //     "messages": [
-    //       {
-    //         "role": "system",
-    //         "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
-    //       },
-    //       {
-    //         "role": "user",
-    //         "content": data.messages.last().unwrap().content
-    //       }
-    //     ]
-    //     })
-    // )
 }

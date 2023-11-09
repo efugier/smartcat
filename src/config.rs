@@ -4,7 +4,7 @@ use std::fs;
 use std::path::PathBuf;
 
 #[derive(Debug, Deserialize)]
-pub struct ServiceConfig {
+pub struct ApiConfig {
     #[serde(skip_serializing)] // internal use only
     pub api_key: String,
     pub url: String,
@@ -13,7 +13,7 @@ pub struct ServiceConfig {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Prompt {
     #[serde(skip_serializing)] // internal use only
-    pub service: String,
+    pub api: String,
     pub model: String,
     pub messages: Vec<Message>,
 }
@@ -28,7 +28,7 @@ pub const PLACEHOLDER_TOKEN: &str = "#[<input>]";
 
 const DEFAULT_CONFIG_PATH: &str = ".config/pipelm/";
 const CUSTOM_CONFIG_ENV_VAR: &str = "PIPELM_CONFIG_PATH";
-const API_KEYS_FILE: &str = ".api_keys.toml";
+const API_KEYS_FILE: &str = ".api_configs.toml";
 const PROMPT_FILE: &str = "prompts.toml";
 
 fn resolve_config_path() -> PathBuf {
@@ -38,18 +38,18 @@ fn resolve_config_path() -> PathBuf {
     }
 }
 
-pub fn get_service_config(service: &str) -> ServiceConfig {
+pub fn get_api_config(api: &str) -> ApiConfig {
     let api_keys_path = resolve_config_path().join(API_KEYS_FILE);
     let content = fs::read_to_string(&api_keys_path)
         .unwrap_or_else(|error| panic!("Could not read file {:?}, {:?}", api_keys_path, error));
 
-    let mut service_configs: HashMap<String, ServiceConfig> = toml::from_str(&content).unwrap();
+    let mut api_configs: HashMap<String, ApiConfig> = toml::from_str(&content).unwrap();
 
-    service_configs.remove(service).unwrap_or_else(|| {
+    api_configs.remove(api).unwrap_or_else(|| {
         panic!(
             "Prompt {} not found, availables ones are: {:?}",
-            service,
-            service_configs.keys().collect::<Vec<_>>()
+            api,
+            api_configs.keys().collect::<Vec<_>>()
         )
     })
 }

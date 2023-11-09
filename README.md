@@ -1,2 +1,134 @@
 # pipelm
-chat gpt interface form cli
+WIP cli interface to language models to bring them in the Unix ecosystem
+
+```
+Usage: pipelm [OPTIONS] [PROMPT]
+
+Arguments:
+  [PROMPT]  prompt in the config to fetch
+
+Options:
+  -c, --command <COMMAND>                custom prompt, incompatible with [PROMTP]
+  -b, --before <BEFORE>                  prefix to add before custom prompt
+  -a, --after <AFTER>                    suffix to add after the imput and the custom prompt
+  -s, --system-message <SYSTEM_MESSAGE>  a system "config" message to send before the prompt
+      --api <API>                        which api to hit [default: openai]
+  -m, --model <MODEL>                    which model (of the api) to use [default: gpt-3.5-turbo]
+  -f, --file <FILE>                      file to read input from
+  -h, --help                             Print help
+  -V, --version                          Print version
+```
+
+## A few examples to get started
+
+```
+cat Cargo.toml | pipelm -c "write a short poem about the content of the file"
+
+A file named package,
+Holds the keys of a software's age.
+With a name, version, and edition too,
+The content speaks of something new.
+
+Dependencies lie within,
+With toml, clap, ureq, and serde in,
+The stars denote any version will do,
+As long as the features are included, too.
+
+A short poem of the file's content,
+A glimpse into the software's intent.
+With these keys and dependencies,
+A program is born, fulfilling needs.
+```
+
+```
+cat my_file.json | pipelm -c "translate to yaml" > my_file.yaml
+```
+
+```
+cat my_stuff.py | pipelm \
+  -c "write a parametrized test suite for the following code using pytest" \
+  -s "output only the code, as a standalone file" \
+  -b "```" -a "```" > test.py
+```
+
+If you find yourself reusing prompts often, you can create a dedicated config entries and it becomes the following:
+
+```
+cat my_stuff.py | pipelm write_tests > test.py
+```
+
+see example in the configuration section.
+
+## Vim
+
+You can also integrate this with your editor. For instance in Vim
+
+```
+:'<,'> | tee >(pipelm write_test)
+```
+
+will append at the end of the current selection tests written by the language model for what was selected.
+
+With some remapping you may have the whole thing attached to few keystrokes e.g. `<leader>wt`.
+
+These are only some ideas to get started, go nuts!
+
+# Configuration
+
+- by default lives at `$HOME/.config/pipelm`
+- the directory can be set using the `PIPELM_CONFIG_PATH` environement variable
+
+Two files are used:
+
+`.api_configs.toml`
+
+```toml
+[openai]  # each api has their own config section with api and url
+url = "https://api.openai.com/v1/chat/completions"
+api_key = "your api key"
+```
+
+`prompts.toml`
+
+```toml
+[default]  # a prompt is a section
+api = "openai"
+model = "gpt-4-1106-preview"
+
+[[default.messages]]  # then you can list messages
+role = "system"
+content = """\
+You are a poetic assistant, skilled in explaining complex programming \
+concepts with creative flair.\
+"""
+
+[[default.messages]]
+role = "user"
+# the following placeholder string #[<input>] will be replaced by the input
+# each message seeks it and replaces it
+content = "#[<input>]" 
+
+[write_test]  # a prompt is a section
+api = "openai"
+model = "gpt-4-1106-preview"
+
+[[write_test.messages]]  # then you can list messages
+role = "system"
+content = """\
+You are a very skilled programmer with an keen eye for detail. You always make sure to write clean \
+code and you value clarity particularly highly. \
+When asked for code, output only the code to write directly. Don't provide explanation.\
+"""
+
+[[write_test.messages]]
+role = "user"
+# the following placeholder string #[<input>] will be replaced by the input
+# each message seeks it and replaces it
+content ='''Write tests using pytest for the following code. Parametrized it if appropriate.
+
+#[<input>]
+'''
+```
+
+see [the config setup file](./src/config.rs) for more details.
+

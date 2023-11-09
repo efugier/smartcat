@@ -1,6 +1,8 @@
-use crate::config::{get_service_config, Prompt, PLACEHOLDER_TOKEN};
-use crate::request::{make_authenticated_request, OpenAiResponse};
+use log::debug;
 use std::io::{Read, Result, Write};
+
+use crate::config::{get_api_config, Prompt, PLACEHOLDER_TOKEN};
+use crate::request::{make_authenticated_request, OpenAiResponse};
 
 // [tmp] mostly template to write tests
 pub fn chunk_process_input<R: Read, W: Write>(
@@ -34,7 +36,7 @@ pub fn chunk_process_input<R: Read, W: Write>(
 }
 
 pub fn process_input_with_request<R: Read, W: Write>(
-    prompt: &mut Prompt,
+    mut prompt: Prompt,
     input: &mut R,
     output: &mut W,
 ) -> Result<()> {
@@ -51,14 +53,15 @@ pub fn process_input_with_request<R: Read, W: Write>(
     for message in prompt.messages.iter_mut() {
         message.content = message.content.replace(PLACEHOLDER_TOKEN, &input)
     }
-    let service_config = get_service_config(&prompt.service);
-    let response: OpenAiResponse = make_authenticated_request(service_config, prompt)
+    let api_config = get_api_config(&prompt.api);
+    let response: OpenAiResponse = make_authenticated_request(api_config, prompt)
         .unwrap()
         .into_json()?;
 
-    println!("{}", response.choices.first().unwrap().message.content);
+    let response_text = response.choices.first().unwrap().message.content.as_str();
+    debug!("{}", &response_text);
 
-    output.write_all(input.as_bytes())?;
+    output.write_all(response_text.as_bytes())?;
 
     Ok(())
 }
