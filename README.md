@@ -5,12 +5,13 @@ Puts a brain behind cat!
 WIP cli interface to language models to bring them in the Unix ecosystem
 
 ```
+Putting a brain behind `cat`. WIP cli interface to language model to bring them in the Unix echosystem 🐈‍⬛
+
 Usage: smartcat [OPTIONS] [PROMPT]
 
 Arguments:
-  [PROMPT]  which prompt in the config to fetch. 
-  The config must have at least one named "default" containing which
-  model and api to hit by default. [default: default]
+  [PROMPT]  which prompt in the config to fetch.
+  The config must have at least one named "default" containing which model and api to hit by default [default: default]
 
 Options:
   -c, --command <COMMAND>
@@ -20,7 +21,7 @@ Options:
   -s, --system-message <SYSTEM_MESSAGE>
           a system "config" message to send before the first user message
       --api <API>
-          which api to hit
+          which api to hit [possible values: openai]
   -m, --model <MODEL>
           which model (of the api) to use
   -f, --file <FILE>

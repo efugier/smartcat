@@ -15,7 +15,7 @@ mod config;
 #[command(
     author = "Emilien Fugier",
     version = "0.1",
-    about = "WIP cli interface to language model to bring them in the Unix echosystem",
+    about = "Putting a brain behind `cat`. WIP cli interface to language model to bring them in the Unix echosystem 🐈‍⬛",
     long_about = None
 )]
 struct Cli {
@@ -30,7 +30,7 @@ struct Cli {
     system_message: Option<String>,
     /// which api to hit
     #[arg(long)]
-    api: Option<String>,
+    api: Option<config::Api>,
     #[arg(short, long)]
     /// which model (of the api) to use
     model: Option<String>,
@@ -77,6 +77,9 @@ fn main() {
             std::process::exit(0);
         }
     }
+
+    config::ensure_config_files()
+        .expect("Unable to verify that the config files exist or to generate new ones.");
 
     let mut prompts = config::get_prompts();
 
