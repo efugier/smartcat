@@ -13,9 +13,10 @@ mod config;
 
 #[derive(Debug, Parser)]
 #[command(
+    name = "smartcat (sc)",
     author = "Emilien Fugier",
     version = "0.1",
-    about = "Putting a brain behind `cat`. WIP cli interface to language model to bring them in the Unix echosystem 🐈‍⬛",
+    about = "Putting a brain behind `cat`. WIP cli interface to language model to bring them in the Unix ecosystem 🐈‍⬛",
     long_about = None
 )]
 struct Cli {

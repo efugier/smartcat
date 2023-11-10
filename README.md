@@ -5,7 +5,7 @@ Puts a brain behind cat!
 WIP cli interface to language models to bring them in the Unix ecosystem
 
 ```
-Putting a brain behind `cat`. WIP cli interface to language model to bring them in the Unix echosystem 🐈‍⬛
+Putting a brain behind `cat`. WIP cli interface to language model to bring them in the Unix ecosystem 🐈‍⬛
 
 Usage: smartcat [OPTIONS] [PROMPT]
 
