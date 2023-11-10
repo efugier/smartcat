@@ -86,12 +86,10 @@ sc write_tests -f my_file.py > test.py
 
 see example in the [configuration section](#Configuration).
 
-## Skipping input
-
-to talk directly to the model
+Skipping input to talk directly to the model (but mind the default prompt)
 
 ```
-sc -i "Do you like trains?"
+sc empty -i "Do you like trains?"
 
 So if you wonder, do I like the trains of steel and might,
 My answer lies in how they're kin to code that runs so right.
@@ -176,11 +174,16 @@ Never ever write ``` around the code. \
 Now let's make something great together!
 """
 
-[write_test]  # a prompt is a section
+[empty]
+api = "openai"
+model = "gpt-4-1106-preview"
+messages = []
+
+[write_test]
 api = "openai"
 model = "gpt-4-1106-preview"
 
-[[write_test.messages]]  # then you can list messages
+[[write_test.messages]]
 role = "system"
 content = """\
 You are an extremely skilled programmer with a keen eye for detail and an emphasis on readable code. \

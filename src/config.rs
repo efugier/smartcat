@@ -68,7 +68,6 @@ impl ApiConfig {
 pub struct Prompt {
     pub api: Api,
     pub model: String,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub messages: Vec<Message>,
 }
 
