@@ -1,4 +1,4 @@
-# smartcat 🐈‍⬛
+# smartcat (sc) 🐈‍⬛
 
 Puts a brain behind cat!
 
@@ -31,6 +31,19 @@ Options:
   -V, --version
           Print version
 ```
+
+## Installation
+
+```
+cargo install smartcat
+```
+
+Optional:
+```
+mv ~/.cargo/bin/smartcat ~/.cargo/bin/sc
+```
+
+where `~/.cargo/` is the cargo home, you can find it with `which smarcat` after installing it.
 
 ## A few examples to get started
 
