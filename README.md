@@ -1,12 +1,16 @@
-# pipelm
+# smartcat 🐈‍⬛
+
+Puts a brain behind cat!
+
 WIP cli interface to language models to bring them in the Unix ecosystem
 
 ```
-Usage: pipelm [OPTIONS] [PROMPT]
+Usage: smartcat [OPTIONS] [PROMPT]
 
 Arguments:
   [PROMPT]  which prompt in the config to fetch. 
-  The config must have at least one named "default" containing which model and api to hit by default [default: default]
+  The config must have at least one named "default" containing which
+  model and api to hit by default. [default: default]
 
 Options:
   -c, --command <COMMAND>
@@ -30,7 +34,7 @@ Options:
 ## A few examples to get started
 
 ```
-cat Cargo.toml | pipelm -c "write a short poem about the content of the file"
+cat Cargo.toml | smartcat -c "write a short poem about the content of the file"
 
 A file named package,
 Holds the keys of a software's age.
@@ -49,11 +53,11 @@ A program is born, fulfilling needs.
 ```
 
 ```
-cat my_file.json | pipelm -c "translate to yaml" > my_file.yaml
+cat my_file.json | smartcat -c "translate to yaml" > my_file.yaml
 ```
 
 ```
-cat my_stuff.py | pipelm \
+cat my_stuff.py | smartcat \
   -c "write a parametrized test suite for the following code using pytest" \
   -s "output only the code, as a standalone file" \
   -b "```" -a "```" > test.py
@@ -62,7 +66,7 @@ cat my_stuff.py | pipelm \
 If you find yourself reusing prompts often, you can create a dedicated config entries and it becomes the following:
 
 ```
-cat my_stuff.py | pipelm write_tests > test.py
+cat my_stuff.py | smartcat write_tests > test.py
 ```
 
 see example in the configuration section.
@@ -72,7 +76,7 @@ see example in the configuration section.
 You can also integrate this with your editor. For instance in Vim
 
 ```
-:'<,'> | tee >(pipelm write_test)
+:'<,'> | tee >(smartcat write_test)
 ```
 
 will append at the end of the current selection tests written by the language model for what was selected.
@@ -83,8 +87,8 @@ These are only some ideas to get started, go nuts!
 
 # Configuration
 
-- by default lives at `$HOME/.config/pipelm`
-- the directory can be set using the `PIPELM_CONFIG_PATH` environement variable
+- by default lives at `$HOME/.config/smartcat`
+- the directory can be set using the `smartcat_CONFIG_PATH` environement variable
 
 Two files are used:
 
