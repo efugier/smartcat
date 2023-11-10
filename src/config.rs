@@ -26,7 +26,7 @@ pub struct Message {
 
 pub const PLACEHOLDER_TOKEN: &str = "#[<input>]";
 
-const DEFAULT_CONFIG_PATH: &str = ".config/pipelm/";
+const DEFAULT_CONFIG_PATH: &str = ".config/smartcat/";
 const CUSTOM_CONFIG_ENV_VAR: &str = "PIPELM_CONFIG_PATH";
 const API_KEYS_FILE: &str = ".api_configs.toml";
 const PROMPT_FILE: &str = "prompts.toml";
