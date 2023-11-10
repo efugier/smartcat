@@ -11,8 +11,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-toml = "*"
-log = "*"
-clap = { version = "*", features = ["derive"] }
-ureq = { version="*", features = ["json"] }
-serde = { version = "*", features = ["derive"] }
+toml = "0"
+log = "0"
+clap = { version = "4", features = ["derive"] }
+ureq = { version="2", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
