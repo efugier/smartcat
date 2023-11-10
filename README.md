@@ -5,18 +5,26 @@ WIP cli interface to language models to bring them in the Unix ecosystem
 Usage: pipelm [OPTIONS] [PROMPT]
 
 Arguments:
-  [PROMPT]  prompt in the config to fetch
+  [PROMPT]  which prompt in the config to fetch. 
+  The config must have at least one named "default" containing which model and api to hit by default [default: default]
 
 Options:
-  -c, --command <COMMAND>                custom prompt, incompatible with [PROMTP]
-  -b, --before <BEFORE>                  prefix to add before custom prompt
-  -a, --after <AFTER>                    suffix to add after the imput and the custom prompt
-  -s, --system-message <SYSTEM_MESSAGE>  a system "config" message to send before the prompt
-      --api <API>                        which api to hit [default: openai]
-  -m, --model <MODEL>                    which model (of the api) to use [default: gpt-3.5-turbo]
-  -f, --file <FILE>                      file to read input from
-  -h, --help                             Print help
-  -V, --version                          Print version
+  -c, --command <COMMAND>
+          custom prompt to append before the input
+  -a, --after-input <AFTER_INPUT>
+          suffix to add after the input and the custom prompt
+  -s, --system-message <SYSTEM_MESSAGE>
+          a system "config" message to send before the first user message
+      --api <API>
+          which api to hit
+  -m, --model <MODEL>
+          which model (of the api) to use
+  -f, --file <FILE>
+          file to read input from
+  -h, --help
+          Print help
+  -V, --version
+          Print version
 ```
 
 ## A few examples to get started

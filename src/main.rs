@@ -19,7 +19,8 @@ mod config;
     long_about = None
 )]
 struct Cli {
-    /// prompt in the config to fetch
+    /// which prompt in the config to fetch. The config must have at least one named "default"
+    /// containing which model and api to hit by default.
     #[arg(default_value_t = String::from("default"))]
     prompt: String,
     #[command(flatten)]
@@ -41,12 +42,12 @@ struct Cli {
 #[derive(Debug, Args)]
 #[group(id = "custom_prompt")]
 struct CustomPrompt {
-    /// custom prompt, incompatible with [PROMTP]
+    /// custom prompt to append before the input
     #[arg(short, long)]
     command: Option<String>,
     /// suffix to add after the input and the custom prompt
     #[arg(short, long)]
-    after: Option<String>,
+    after_input: Option<String>,
 }
 
 fn main() {
@@ -85,16 +86,13 @@ fn main() {
         &args.prompt, &available_prompts
     );
     let prompt = prompts.remove(&args.prompt).expect(&prompt_not_found_error);
-    //     None => config::Prompt {
-    //         api: args.api,
-    //         model: args.model,
-    //         messages: Vec::new(),
-    //     },
-    // };
+
     let prompt = cutsom_prompt::customize_prompt(
         prompt,
+        &args.api,
+        &args.model,
         &args.custom_prompt_args.command,
-        &args.custom_prompt_args.after,
+        &args.custom_prompt_args.after_input,
         &args.system_message,
     );
 
