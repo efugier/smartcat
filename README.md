@@ -111,6 +111,10 @@ You can also integrate this with your editor. For instance in Vim
 :'<,'> | sc -c "replace the versions with wildcards"
 ```
 
+```
+:'<,'> | sc -c "fix the typos in this text"
+```
+
 will replace the current selection with the same text transformed by the language model.
 
 ```
