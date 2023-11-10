@@ -71,7 +71,7 @@ fn main() {
 
     // case for testing
     // TODO: mock API
-    if std::env::var("PIPELM_TEST").unwrap_or_default() == "1" {
+    if std::env::var("SMARTCAT_TEST").unwrap_or_default() == "1" {
         if let Err(e) = input_processing::chunk_process_input(
             &mut input,
             &mut output,

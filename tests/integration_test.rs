@@ -13,7 +13,7 @@ fn test_io() {
         .arg("test")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .env("PIPELM_TEST", "1")
+        .env("SMARTCAT_TEST", "1")
         .spawn()
         .expect("Failed to start the program");
     let stdin = child.stdin.as_mut().expect("Failed to open stdin");

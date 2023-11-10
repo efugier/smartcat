@@ -10,7 +10,7 @@ use std::str::FromStr;
 pub const PLACEHOLDER_TOKEN: &str = "#[<input>]";
 
 const DEFAULT_CONFIG_PATH: &str = ".config/smartcat/";
-const CUSTOM_CONFIG_ENV_VAR: &str = "PIPELM_CONFIG_PATH";
+const CUSTOM_CONFIG_ENV_VAR: &str = "SMARTCAT_CONFIG_PATH";
 const API_KEYS_FILE: &str = ".api_configs.toml";
 const PROMPT_FILE: &str = "prompts.toml";
 
@@ -188,11 +188,37 @@ pub fn ensure_config_files() -> std::io::Result<()> {
         let prompt_str = toml::to_string_pretty(&prompt_config)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
 
-        std::fs::create_dir_all(api_keys_path().parent().unwrap())?;
+        std::fs::create_dir_all(prompts_path().parent().unwrap())?;
 
         let mut prompts_file = fs::File::create(prompts_path())?;
         prompts_file.write_all(prompt_str.as_bytes())?;
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::env;
+    use std::path::Path;
+
+    #[test]
+    fn resolver_custom_config_path() {
+        let temp_path = "/tmp/custom_path";
+        env::set_var(CUSTOM_CONFIG_ENV_VAR, temp_path);
+        let result = resolve_config_path();
+
+        assert_eq!(result, Path::new(temp_path));
+    }
+
+    #[test]
+    fn resolve_default_config_path() {
+        env::remove_var(CUSTOM_CONFIG_ENV_VAR);
+        let home_dir = env::var("HOME").expect("HOME not defined");
+        let default_path = PathBuf::new().join(home_dir).join(DEFAULT_CONFIG_PATH);
+        let result = resolve_config_path();
+
+        assert_eq!(result, Path::new(&default_path));
+    }
 }
