@@ -1,16 +1,16 @@
 use log::debug;
 
-use crate::config::{Message, Prompt, PLACEHOLDER_TOKEN};
+use crate::config::{Api, Message, Prompt, PLACEHOLDER_TOKEN};
 
 pub fn customize_prompt(
     mut prompt: Prompt,
-    api: &Option<String>,
+    api: &Option<Api>,
     model: &Option<String>,
     command: &Option<String>,
     after_input: &Option<String>,
     system_message: &Option<String>,
 ) -> Prompt {
-    debug!("pre-customization promot {:?}", prompt);
+    debug!("pre-customization prompt {:?}", prompt);
     // Override parameters
     if let Some(api) = api {
         prompt.api = api.to_owned();
@@ -35,14 +35,15 @@ pub fn customize_prompt(
     }
 
     // if prompt customization was provided, add it in a new message
-    let mut prompt_message = String::new();
     if let Some(command_text) = command {
-        prompt_message.push_str(command_text);
+        let mut prompt_message = String::from(command_text);
         if !prompt_message.contains(PLACEHOLDER_TOKEN) {
             prompt_message.push_str(PLACEHOLDER_TOKEN);
         }
-    }
-    if !prompt_message.is_empty() {
+        // remove existing input placeholder in order to get just one
+        for message in prompt.messages.iter_mut() {
+            message.content = message.content.replace(PLACEHOLDER_TOKEN, "");
+        }
         prompt.messages.push(Message {
             role: "user".to_string(),
             content: prompt_message,
@@ -73,6 +74,7 @@ pub fn customize_prompt(
 
     prompt.messages.push(last_message);
 
-    debug!("pre-customization promot {:?}", prompt);
+    debug!("post-customization prompt {:?}", prompt);
+
     prompt
 }

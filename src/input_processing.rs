@@ -50,10 +50,14 @@ pub fn process_input_with_request<R: Read, W: Write>(
 
     let input = String::from_utf8(buffer).unwrap();
 
+    // insert the input in the messages with placeholders
     for message in prompt.messages.iter_mut() {
         message.content = message.content.replace(PLACEHOLDER_TOKEN, &input)
     }
-    let api_config = get_api_config(&prompt.api);
+    // fetch the api config tied to the prompt
+    let api_config = get_api_config(&prompt.api.to_string());
+
+    // make the request
     let response: OpenAiResponse = make_authenticated_request(api_config, prompt)
         .unwrap()
         .into_json()?;
