@@ -173,6 +173,9 @@ pub fn ensure_config_files() -> std::io::Result<()> {
 
         let api_config_str = toml::to_string_pretty(&api_config)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+
+        std::fs::create_dir_all(api_keys_path().parent().unwrap())?;
+
         let mut config_file = fs::File::create(api_keys_path())?;
         config_file.write_all(api_config_str.as_bytes())?;
     }
@@ -181,8 +184,12 @@ pub fn ensure_config_files() -> std::io::Result<()> {
         prompt_user_for_config_file_creation(prompts_path());
         let mut prompt_config = HashMap::new();
         prompt_config.insert("default", Prompt::default());
+
         let prompt_str = toml::to_string_pretty(&prompt_config)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+
+        std::fs::create_dir_all(api_keys_path().parent().unwrap())?;
+
         let mut prompts_file = fs::File::create(prompts_path())?;
         prompts_file.write_all(prompt_str.as_bytes())?;
     }
