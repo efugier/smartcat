@@ -34,9 +34,15 @@ struct Cli {
     #[arg(short, long)]
     /// which model (of the api) to use
     model: Option<String>,
-    /// file to read input from
+    /// skip reading from the input and read this file instead
     #[arg(short, long)]
     file: Option<String>,
+    /// wether to repeat the input before the output, useful to extend instead of replacing
+    #[arg(short, long)]
+    repeat_input: bool,
+    /// skips reading from input and use that value instead
+    #[arg(short, long)]
+    input: Option<String>,
 }
 
 #[derive(Debug, Args)]
@@ -101,7 +107,13 @@ fn main() {
 
     debug!("{:?}", prompt);
 
-    if let Err(e) = input_processing::process_input_with_request(prompt, &mut input, &mut output) {
+    if let Err(e) = input_processing::process_input_with_request(
+        prompt,
+        &mut input,
+        args.input,
+        &mut output,
+        args.repeat_input,
+    ) {
         eprintln!("Error: {}", e);
         std::process::exit(1);
     }

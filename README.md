@@ -67,22 +67,43 @@ cat my_stuff.py | smartcat \
 If you find yourself reusing prompts often, you can create a dedicated config entries and it becomes the following:
 
 ```
-cat my_stuff.py | smartcat write_tests > test.py
+smartcat write_tests -f my_file.py > test.py
 ```
 
 see example in the configuration section.
+
+## Skipping input
+
+to talk directly to the model
+
+```
+smartcat -i "Do you like trains?"
+
+So if you wonder, do I like the trains of steel and might,
+My answer lies in how they're kin to code that runs so right.
+Frameworks and libraries, like stations, stand so proud
+And programmers, conductors, who make the engines loud.
+```
 
 ## Vim
 
 You can also integrate this with your editor. For instance in Vim
 
 ```
-:'<,'> | tee >(smartcat write_test)
+:'<,'> | smartcat write_test -r
 ```
 
 will append at the end of the current selection tests written by the language model for what was selected.
 
 With some remapping you may have the whole thing attached to few keystrokes e.g. `<leader>wt`.
+
+## Helix
+
+In helix, simply press the pipe key to redirect the selection to `smarcat`.
+
+```
+pipe: smartcat write_test -r
+```
 
 These are only some ideas to get started, go nuts!
 

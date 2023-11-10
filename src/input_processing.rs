@@ -38,17 +38,24 @@ pub fn chunk_process_input<R: Read, W: Write>(
 pub fn process_input_with_request<R: Read, W: Write>(
     mut prompt: Prompt,
     input: &mut R,
+    input_string: Option<String>,
     output: &mut W,
+    repeat_input: bool,
 ) -> Result<()> {
-    let mut buffer = Vec::new();
-    input.read_to_end(&mut buffer)?;
+    let mut input = match input_string {
+        Some(input_string) => input_string,
+        None => {
+            let mut buffer = Vec::new();
+            input.read_to_end(&mut buffer)?;
+
+            String::from_utf8(buffer).unwrap()
+        }
+    };
 
     // nothing to do if no input
-    if buffer.is_empty() {
+    if input.is_empty() {
         return Ok(());
     }
-
-    let input = String::from_utf8(buffer).unwrap();
 
     // insert the input in the messages with placeholders
     for message in prompt.messages.iter_mut() {
@@ -65,6 +72,10 @@ pub fn process_input_with_request<R: Read, W: Write>(
     let response_text = response.choices.first().unwrap().message.content.as_str();
     debug!("{}", &response_text);
 
+    if repeat_input {
+        input.push('\n');
+        output.write_all(input.as_bytes())?;
+    }
     output.write_all(response_text.as_bytes())?;
 
     Ok(())
