@@ -73,12 +73,23 @@ pub struct Prompt {
 }
 
 impl Default for Prompt {
-    // default to openai and gpt 4 with no preset messages
+    /// default to openai and gpt 4 with a preset message telling the
+    /// model to behave like smart version of cat.
     fn default() -> Self {
+        let messages = vec![Message {
+                role: "system".to_string(),
+                content: "\
+                    You are an extremely skill programmer with a keen eye for detail and an emphasis on readable code. \
+                    You have been tasked with acting as a smart version of the cat unix program. You take text and a prompt in and write text out. \
+                    For that reason, it is of crucial importance to just write the desired output. Do not under any circumstance write any comment or thought \
+                    as you output will be piped into other programs. Do not write the markdown delimiters for code as well. Now let's make something great together!
+                ".to_string(),
+            }
+        ];
         Prompt {
             api: Api::Openai,
             model: String::from("gpt-4"),
-            messages: Vec::new(),
+            messages,
         }
     }
 }

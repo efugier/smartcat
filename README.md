@@ -45,10 +45,11 @@ mv ~/.cargo/bin/smartcat ~/.cargo/bin/sc
 
 where `~/.cargo/` is the cargo home, you can find it with `which smarcat` after installing it.
 
+On the first run, the program will ask you to generate some default configuration if it cannot find them. More about that in the [configuration section](#Configuration).
 ## A few examples to get started
 
 ```
-cat Cargo.toml | smartcat -c "write a short poem about the content of the file"
+cat Cargo.toml | sc -c "write a short poem about the content of the file"
 
 A file named package,
 Holds the keys of a software's age.
@@ -67,11 +68,11 @@ A program is born, fulfilling needs.
 ```
 
 ```
-cat my_file.json | smartcat -c "translate to yaml" > my_file.yaml
+sc -f Cargo.toml -c "translate the following file in json" | save Cargo.json
 ```
 
 ```
-cat my_stuff.py | smartcat \
+cat my_stuff.py | sc \
   -c "write a parametrized test suite for the following code using pytest" \
   -s "output only the code, as a standalone file" \
   -b "```" -a "```" > test.py
@@ -80,17 +81,17 @@ cat my_stuff.py | smartcat \
 If you find yourself reusing prompts often, you can create a dedicated config entries and it becomes the following:
 
 ```
-smartcat write_tests -f my_file.py > test.py
+sc write_tests -f my_file.py > test.py
 ```
 
-see example in the configuration section.
+see example in the [configuration section](#Configuration).
 
 ## Skipping input
 
 to talk directly to the model
 
 ```
-smartcat -i "Do you like trains?"
+sc -i "Do you like trains?"
 
 So if you wonder, do I like the trains of steel and might,
 My answer lies in how they're kin to code that runs so right.
@@ -103,7 +104,7 @@ And programmers, conductors, who make the engines loud.
 You can also integrate this with your editor. For instance in Vim
 
 ```
-:'<,'> | smartcat write_test -r
+:'<,'> | sc write_test -r
 ```
 
 will append at the end of the current selection tests written by the language model for what was selected.
@@ -115,7 +116,7 @@ With some remapping you may have the whole thing attached to few keystrokes e.g.
 In helix, simply press the pipe key to redirect the selection to `smarcat`.
 
 ```
-pipe: smartcat write_test -r
+pipe: sc write_test -r
 ```
 
 These are only some ideas to get started, go nuts!
@@ -132,7 +133,7 @@ Two files are used:
 ```toml
 [openai]  # each api has their own config section with api and url
 url = "https://api.openai.com/v1/chat/completions"
-api_key = "your api key"
+api_key = "<your_api_key>"
 ```
 
 `prompts.toml`
@@ -145,15 +146,11 @@ model = "gpt-4-1106-preview"
 [[default.messages]]  # then you can list messages
 role = "system"
 content = """\
-You are a poetic assistant, skilled in explaining complex programming \
-concepts with creative flair.\
+You are an extremely skill programmer with a keen eye for detail and an emphasis on readable code. \
+You have been tasked with acting as a smart version of the cat unix program. You take text and a prompt in and write text out. \
+For that reason, it is of crucial importance to just write the desired output. Do not under any circumstance write any comment or thought \
+as you output will be piped into other programs. Do not write the markdown delimiters for code as well. Now let's make something great together!
 """
-
-[[default.messages]]
-role = "user"
-# the following placeholder string #[<input>] will be replaced by the input
-# each message seeks it and replaces it
-content = "#[<input>]" 
 
 [write_test]  # a prompt is a section
 api = "openai"
@@ -162,9 +159,10 @@ model = "gpt-4-1106-preview"
 [[write_test.messages]]  # then you can list messages
 role = "system"
 content = """\
-You are a very skilled programmer with an keen eye for detail. You always make sure to write clean \
-code and you value clarity particularly highly. \
-When asked for code, output only the code to write directly. Don't provide explanation.\
+You are an extremely skill programmer with a keen eye for detail and an emphasis on readable code. \
+You have been tasked with acting as a smart version of the cat unix program. You take text and a prompt in and write text out. \
+For that reason, it is of crucial importance to just write the desired output. Do not under any circumstance write any comment or thought \
+as you output will be piped into other programs. Do not write the markdown delimiters for code as well. Now let's make something great together!
 """
 
 [[write_test.messages]]
