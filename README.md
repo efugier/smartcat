@@ -99,19 +99,35 @@ Frameworks and libraries, like stations, stand so proud
 And programmers, conductors, who make the engines loud.
 ```
 
-## Vim
+## Integrating with editors
+
+The key for a good integration in editors is a good default prompt and the usage of the `-r` flag to decide whether to replace or extend the selection.
+
+### Vim
 
 You can also integrate this with your editor. For instance in Vim
+
+```
+:'<,'> | sc -c "replace the versions with wildcards"
+```
+
+will replace the current selection with the same text transformed by the language model.
+
+```
+:'<,'> | sc -c "implement the traits FromStr and ToString for this struct" -r
+```
+
+will append at the end of the current selection the result of the language model.
 
 ```
 :'<,'> | sc write_test -r
 ```
 
-will append at the end of the current selection tests written by the language model for what was selected.
+...
 
-With some remapping you may have the whole thing attached to few keystrokes e.g. `<leader>wt`.
+With some remapping you may have your most reccurrent action attached to few keystrokes e.g. `<leader>wt`!
 
-## Helix
+### Helix
 
 In helix, simply press the pipe key to redirect the selection to `smarcat`.
 
@@ -146,10 +162,14 @@ model = "gpt-4-1106-preview"
 [[default.messages]]  # then you can list messages
 role = "system"
 content = """\
-You are an extremely skill programmer with a keen eye for detail and an emphasis on readable code. \
+You are an extremely skilled programmer with a keen eye for detail and an emphasis on readable code. \
 You have been tasked with acting as a smart version of the cat unix program. You take text and a prompt in and write text out. \
 For that reason, it is of crucial importance to just write the desired output. Do not under any circumstance write any comment or thought \
-as you output will be piped into other programs. Do not write the markdown delimiters for code as well. Now let's make something great together!
+as you output will be piped into other programs. Do not write the markdown delimiters for code as well. \
+Sometimes you will be asked to implement or extend some input code. Same thing goes here, write only what was asked because what you write will \
+be directly added to the user's editor. \
+Never ever write ``` around the code. \
+Now let's make something great together!
 """
 
 [write_test]  # a prompt is a section
@@ -159,10 +179,14 @@ model = "gpt-4-1106-preview"
 [[write_test.messages]]  # then you can list messages
 role = "system"
 content = """\
-You are an extremely skill programmer with a keen eye for detail and an emphasis on readable code. \
+You are an extremely skilled programmer with a keen eye for detail and an emphasis on readable code. \
 You have been tasked with acting as a smart version of the cat unix program. You take text and a prompt in and write text out. \
 For that reason, it is of crucial importance to just write the desired output. Do not under any circumstance write any comment or thought \
-as you output will be piped into other programs. Do not write the markdown delimiters for code as well. Now let's make something great together!
+as you output will be piped into other programs. Do not write the markdown delimiters for code as well. \
+Sometimes you will be asked to implement or extend some input code. Same thing goes here, write only what was asked because what you write will \
+be directly added to the user's editor. \
+Never ever write ``` around the code. \
+Now let's make something great together!
 """
 
 [[write_test.messages]]
