@@ -85,7 +85,7 @@ fn main() {
         }
     }
 
-    config::ensure_config_files()
+    config::ensure_config_files(true)
         .expect("Unable to verify that the config files exist or to generate new ones.");
 
     let mut prompts = config::get_prompts();

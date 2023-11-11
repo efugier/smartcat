@@ -85,7 +85,7 @@ impl Default for Prompt {
                     Sometimes you will be asked to implement or extend some input code. Same thing goes here, write only what was asked because what you write will \
                     be directly added to the user's editor. \
                     Never ever write ``` around the code. \
-                    Now let's make something great together!
+                    Now let's make something great together! \
                 ".to_string(),
             }
         ];
@@ -156,19 +156,24 @@ fn prompt_user_for_config_file_creation(file_path: impl Debug) {
     }
 }
 
-pub fn ensure_config_files() -> std::io::Result<()> {
+pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
     if !api_keys_path().exists() {
-        prompt_user_for_config_file_creation(api_keys_path());
-        println!(
-            "Please paste your openai API key, it can be found at\n\
-                https://platform.openai.com/api-keys\n\
-                Press enter to skip (then edit the file at {:?}).",
-            api_keys_path()
-        );
+        let openai_api_key = if interactive {
+            prompt_user_for_config_file_creation(api_keys_path());
+            println!(
+                "Please paste your openai API key, it can be found at\n\
+                    https://platform.openai.com/api-keys\n\
+                    Press enter to skip (then edit the file at {:?}).",
+                api_keys_path()
+            );
+            read_user_input()
+        } else {
+            "<insert_api_key_here>".to_string()
+        };
         let mut api_config = HashMap::new();
         api_config.insert(
             Prompt::default().api.to_string(),
-            ApiConfig::default_with_api_key(read_user_input()),
+            ApiConfig::default_with_api_key(openai_api_key),
         );
 
         let api_config_str = toml::to_string_pretty(&api_config)
@@ -181,7 +186,9 @@ pub fn ensure_config_files() -> std::io::Result<()> {
     }
 
     if !prompts_path().exists() {
-        prompt_user_for_config_file_creation(prompts_path());
+        if interactive {
+            prompt_user_for_config_file_creation(prompts_path());
+        }
         let mut prompt_config = HashMap::new();
         prompt_config.insert("default", Prompt::default());
 
@@ -201,6 +208,8 @@ pub fn ensure_config_files() -> std::io::Result<()> {
 mod tests {
     use super::*;
     use std::env;
+    use std::fs;
+    use std::io::Read;
     use std::path::Path;
 
     #[test]
@@ -220,5 +229,69 @@ mod tests {
         let result = resolve_config_path();
 
         assert_eq!(result, Path::new(&default_path));
+    }
+    #[test]
+    fn test_ensure_config_files_not_existing() -> std::io::Result<()> {
+        let temp_dir = tempfile::TempDir::new()?;
+        let original_value = env::var("CUSTOM_CONFIG_ENV_VAR");
+        env::set_var("CUSTOM_CONFIG_ENV_VAR", temp_dir.path());
+
+        let api_keys_path = api_keys_path();
+        let prompts_path = prompts_path();
+
+        let result = ensure_config_files(false);
+
+        match original_value {
+            Ok(val) => env::set_var("CUSTOM_CONFIG_ENV_VAR", val),
+            Err(_) => env::remove_var("CUSTOM_CONFIG_ENV_VAR"),
+        }
+
+        result?;
+
+        assert!(api_keys_path.exists());
+        assert!(prompts_path.exists());
+        Ok(())
+    }
+    #[test]
+    fn test_ensure_config_files_already_existing() -> std::io::Result<()> {
+        let temp_dir = tempfile::TempDir::new()?;
+
+        let original_value = env::var("CUSTOM_CONFIG_ENV_VAR");
+        env::set_var(CUSTOM_CONFIG_ENV_VAR, temp_dir.path());
+
+        let api_keys_path = api_keys_path();
+        let prompts_path = prompts_path();
+
+        // Precreate files with some content
+        let mut api_keys_file = fs::File::create(&api_keys_path)?;
+        api_keys_file.write_all(b"Some API key data")?;
+
+        let mut prompts_file = fs::File::create(&prompts_path)?;
+        prompts_file.write_all(b"Some prompts data")?;
+
+        let result = ensure_config_files(false);
+
+        // Restoring the original environment variable
+        match original_value {
+            Ok(val) => env::set_var("CUSTOM_CONFIG_ENV_VAR", val),
+            Err(_) => env::remove_var("CUSTOM_CONFIG_ENV_VAR"),
+        }
+
+        result?;
+
+        // Check if files still exist
+        assert!(api_keys_path.exists());
+        assert!(prompts_path.exists());
+
+        // Check if the contents remain unchanged
+        let mut api_keys_content = String::new();
+        fs::File::open(&api_keys_path)?.read_to_string(&mut api_keys_content)?;
+        assert_eq!(api_keys_content, "Some API key data".to_string());
+
+        let mut prompts_content = String::new();
+        fs::File::open(&prompts_path)?.read_to_string(&mut prompts_content)?;
+        assert_eq!(prompts_content, "Some prompts data".to_string());
+
+        Ok(())
     }
 }
