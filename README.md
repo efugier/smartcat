@@ -21,11 +21,15 @@ Options:
   -s, --system-message <SYSTEM_MESSAGE>
           a system "config" message to send before the first user message
       --api <API>
-          which api to hit [possible values: openai]
+          which api to hit [possible values: openai, another-api-for-tests]
   -m, --model <MODEL>
           which model (of the api) to use
   -f, --file <FILE>
-          file to read input from
+          skip reading from the input and read this file instead
+  -r, --repeat-input
+          wether to repeat the input before the output, useful to extend instead of replacing
+  -i, --input <INPUT>
+          skips reading from input and use that value instead
   -h, --help
           Print help
   -V, --version
@@ -143,6 +147,7 @@ These are only some ideas to get started, go nuts!
 
 - by default lives at `$HOME/.config/smartcat`
 - the directory can be set using the `SMARTCAT_CONFIG_PATH` environement variable
+- use `#[<input>]` as the placeholder for input when writing prompts
 
 Two files are used:
 
