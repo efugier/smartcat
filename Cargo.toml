@@ -5,8 +5,13 @@ Putting a brain behind `cat`.
 WIP cli interface to language model to bring them in the Unix ecosystem 🐈‍⬛
 '''
 license = "MIT OR Apache-2.0"
-version = "0.1.8"
+version = "0.1.9"
 edition = "2021"
+homepage = "https://github.com/efugier/smartcat"
+repository = "https://github.com/efugier/smartcat"
+keywords = ["cli", "pipe", "llm", "ai", "chatgpt"]
+categories = ["command-line-utilities"]
+readme="README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
