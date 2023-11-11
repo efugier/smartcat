@@ -42,12 +42,10 @@ Options:
 cargo install smartcat
 ```
 
-Optional:
-```
-mv ~/.cargo/bin/smartcat ~/.cargo/bin/sc
-```
+(the binary is named `sc`)
 
-where `~/.cargo/` is the cargo home, you can find it with `which smarcat` after installing it.
+Or download directly the binary compiled for your platform from the [release page](https://github.com/efugier/smartcat/releases).
+
 
 On the first run, the program will ask you to generate some default configuration if it cannot find them. More about that in the [configuration section](#Configuration).
 
