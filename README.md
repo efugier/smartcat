@@ -142,7 +142,7 @@ These are only some ideas to get started, go nuts!
 # Configuration
 
 - by default lives at `$HOME/.config/smartcat`
-- the directory can be set using the `smartcat_CONFIG_PATH` environement variable
+- the directory can be set using the `SMARTCAT_CONFIG_PATH` environement variable
 
 Two files are used:
 
