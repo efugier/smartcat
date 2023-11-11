@@ -14,10 +14,11 @@ const CUSTOM_CONFIG_ENV_VAR: &str = "SMARTCAT_CONFIG_PATH";
 const API_KEYS_FILE: &str = ".api_configs.toml";
 const PROMPT_FILE: &str = "prompts.toml";
 
-#[derive(clap::ValueEnum, Serialize, Deserialize, Debug, Clone)]
+#[derive(clap::ValueEnum, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Api {
     Openai,
+    AnotherApiForTests,
 }
 
 impl FromStr for Api {
@@ -35,11 +36,16 @@ impl ToString for Api {
     fn to_string(&self) -> String {
         match self {
             Api::Openai => "openai".to_string(),
+            v => panic!(
+                "{:?} is not implemented, use on among {:?}",
+                v,
+                vec![Api::Openai]
+            ),
         }
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct ApiConfig {
     pub api_key: String,
     pub url: String,
@@ -64,7 +70,7 @@ impl ApiConfig {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Prompt {
     pub api: Api,
     pub model: String,
@@ -95,7 +101,18 @@ impl Default for Prompt {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+impl Prompt {
+    pub fn empty() -> Self {
+        let messages = vec![];
+        Prompt {
+            api: Api::Openai,
+            model: Prompt::default().model,
+            messages,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Message {
     pub role: String,
     pub content: String,
@@ -204,6 +221,7 @@ pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
         }
         let mut prompt_config = HashMap::new();
         prompt_config.insert("default", Prompt::default());
+        prompt_config.insert("empty", Prompt::empty());
 
         let prompt_str = toml::to_string_pretty(&prompt_config)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;

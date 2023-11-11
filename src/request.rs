@@ -63,5 +63,10 @@ pub fn make_authenticated_request(
         .set("Authorization", &format!("Bearer {}", api_config.api_key));
     match prompt.api {
         Api::Openai => request.send_json(OpenAiPrompt::from(prompt)),
+        v => panic!(
+            "{:?} is not implemented, use on among {:?}",
+            v,
+            vec![Api::Openai]
+        ),
     }
 }
