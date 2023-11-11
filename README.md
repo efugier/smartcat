@@ -7,7 +7,7 @@ WIP cli interface to language models to bring them in the Unix ecosystem
 ```
 Putting a brain behind `cat`. WIP cli interface to language model to bring them in the Unix ecosystem 🐈‍⬛
 
-Usage: smartcat [OPTIONS] [PROMPT]
+Usage: sc [OPTIONS] [PROMPT]
 
 Arguments:
   [PROMPT]  which prompt in the config to fetch.
@@ -50,6 +50,7 @@ mv ~/.cargo/bin/smartcat ~/.cargo/bin/sc
 where `~/.cargo/` is the cargo home, you can find it with `which smarcat` after installing it.
 
 On the first run, the program will ask you to generate some default configuration if it cannot find them. More about that in the [configuration section](#Configuration).
+
 ## A few examples to get started
 
 ```
@@ -78,8 +79,8 @@ sc -f Cargo.toml -c "translate the following file in json" | save Cargo.json
 ```
 cat my_stuff.py | sc \
   -c "write a parametrized test suite for the following code using pytest" \
-  -s "output only the code, as a standalone file" \
-  -b "```" -a "```" > test.py
+  -s "output only the code, as a standalone file \n```\n" \
+  -a "```" > test.py
 ```
 
 If you find yourself reusing prompts often, you can create a dedicated config entries and it becomes the following:
@@ -215,7 +216,7 @@ see [the config setup file](./src/config.rs) for more details.
 
 ## Developping
 
-Some test rely on environement variables and don't behave well while multi threading so make sure to test with
+Some tests rely on environement variables and don't behave well with multi-threading so make sure to test with
 
 ```
 cargo test -- --test-threads=1

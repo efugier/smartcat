@@ -1,16 +1,17 @@
 [package]
 name = "smartcat"
+version = "0.1.10"
+authors = ["Emilien Fugier <mail@emilienfugier.net>"]
 description = '''
 Putting a brain behind `cat`.
-WIP cli interface to language model to bring them in the Unix ecosystem 🐈‍⬛
+WIP cli interface to bring language models in the Unix ecosystem 🐈‍⬛
 '''
 license = "MIT OR Apache-2.0"
-version = "0.1.9"
 edition = "2021"
 homepage = "https://github.com/efugier/smartcat"
 repository = "https://github.com/efugier/smartcat"
 keywords = ["cli", "pipe", "llm", "ai", "chatgpt"]
-categories = ["command-line-utilities"]
+categories = ["command-line-utilities", "text-processing"]
 readme="README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -24,3 +25,20 @@ serde = { version = "1", features = ["derive"] }
 
 [dev-dependencies]
 tempfile = "3"
+
+[[bin]]
+path = "src/main.rs"
+name = "sc"
+
+[package.metadata.deb]
+section = "utils"
+assets = [
+  ["target/release/sc", "usr/bin/", "755"],
+  ["LICENSE", "usr/share/doc/smartcat/", "644"],
+  ["CHANGELOG.md", "usr/share/doc/smartcat/CHANGELOG", "644"],
+  ["README.md", "usr/share/doc/smartcat/README", "644"],
+]
+extended-description = """\
+Putting a brain behind `cat`.
+WIP cli interface to bring language models in the Unix ecosystem 🐈‍⬛
+"""

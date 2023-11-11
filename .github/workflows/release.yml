@@ -57,8 +57,6 @@ jobs:
       TARGET_DIR: ./target
       # Emit backtraces on panics.
       RUST_BACKTRACE: 1
-      # Build static releases with PCRE2.
-      PCRE2_SYS_STATIC: 1
     strategy:
       matrix:
         build: [linux, linux-arm, macos, win-msvc, win-gnu, win32-msvc]
@@ -92,15 +90,15 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Install packages (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        ci/ubuntu-install-packages
+    # - name: Install packages (Ubuntu)
+    #   if: matrix.os == 'ubuntu-latest'
+    #   run: |
+    #     ci/ubuntu-install-packages
 
-    - name: Install packages (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        ci/macos-install-packages
+    # - name: Install packages (macOS)
+    #   if: matrix.os == 'macos-latest'
+    #   run: |
+    #     ci/macos-install-packages
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@master
@@ -123,11 +121,11 @@ jobs:
         echo "target dir is: ${{ env.TARGET_DIR }}"
 
     - name: Build release binary
-      run: ${{ env.CARGO }} build --verbose --release --features pcre2 ${{ env.TARGET_FLAGS }}
+      run: ${{ env.CARGO }} build --verbose --release ${{ env.TARGET_FLAGS }}
 
     - name: Strip release binary (linux, macos and macos-arm)
       if: matrix.build == 'linux' || matrix.os == 'macos'
-      run: strip "target/${{ matrix.target }}/release/rg"
+      run: strip "target/${{ matrix.target }}/release/sc"
 
     - name: Strip release binary (arm)
       if: matrix.build == 'linux-arm'
@@ -136,30 +134,26 @@ jobs:
           "$PWD/target:/target:Z" \
           rustembedded/cross:arm-unknown-linux-gnueabihf \
           arm-linux-gnueabihf-strip \
-          /target/arm-unknown-linux-gnueabihf/release/rg
+          /target/arm-unknown-linux-gnueabihf/release/sc
 
     - name: Build archive
       shell: bash
       run: |
-        outdir="$(ci/cargo-out-dir "${{ env.TARGET_DIR }}")"
-        staging="ripgrep-${{ needs.create-release.outputs.smartcat_version }}-${{ matrix.target }}"
-        mkdir -p "$staging"/{complete,doc}
+        staging="smartcat-${{ needs.create-release.outputs.smartcat_version }}-${{ matrix.target }}"
+        mkdir -p "$staging"/
 
-        cp {README.md,COPYING,UNLICENSE,LICENSE-MIT} "$staging/"
-        cp {CHANGELOG.md,FAQ.md,GUIDE.md} "$staging/doc/"
-        cp "$outdir"/{rg.bash,rg.fish,_rg.ps1} "$staging/complete/"
-        cp complete/_rg "$staging/complete/"
+        cp {README.md,LICENSE} "$staging/"
+        # cp {CHANGELOG.md,FAQ.md,GUIDE.md} "$staging/doc/"
 
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          cp "target/${{ matrix.target }}/release/rg.exe" "$staging/"
+          cp "target/${{ matrix.target }}/release/sc.exe" "$staging/"
           7z a "$staging.zip" "$staging"
           certutil -hashfile "$staging.zip" SHA256 > "$staging.zip.sha256"
           echo "ASSET=$staging.zip" >> $GITHUB_ENV
           echo "ASSET_SUM=$staging.zip.sha256" >> $GITHUB_ENV
         else
           # The man page is only generated on Unix systems. ¯\_(ツ)_/¯
-          cp "$outdir"/rg.1 "$staging/doc/"
-          cp "target/${{ matrix.target }}/release/rg" "$staging/"
+          cp "target/${{ matrix.target }}/release/sc" "$staging/"
           tar czf "$staging.tar.gz" "$staging"
           shasum -a 256 "$staging.tar.gz" > "$staging.tar.gz.sha256"
           echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV

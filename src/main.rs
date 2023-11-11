@@ -16,7 +16,7 @@ mod config;
     name = "smartcat (sc)",
     author = "Emilien Fugier",
     version = "0.1",
-    about = "Putting a brain behind `cat`. WIP cli interface to language model to bring them in the Unix ecosystem 🐈‍⬛",
+    about = "Putting a brain behind `cat`. WIP cli interface to bring language models in the Unix ecosystem 🐈‍⬛",
     long_about = None
 )]
 struct Cli {
