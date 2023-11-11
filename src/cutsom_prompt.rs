@@ -23,10 +23,7 @@ pub fn customize_prompt(
 
     // if there's a system message to add, add it before the first user message
     if let Some(message_content) = system_message {
-        let system_message = Message {
-            role: "system".to_string(),
-            content: message_content.to_owned(),
-        };
+        let system_message = Message::system(message_content);
         if let Some(index) = first_user_message_index {
             prompt.messages.insert(index, system_message);
         } else {
@@ -44,19 +41,13 @@ pub fn customize_prompt(
         for message in prompt.messages.iter_mut() {
             message.content = message.content.replace(PLACEHOLDER_TOKEN, "");
         }
-        prompt.messages.push(Message {
-            role: "user".to_string(),
-            content: prompt_message,
-        });
+        prompt.messages.push(Message::user(&prompt_message));
     }
 
     // get the last message for check and make sure it's a user one
     let mut last_message =
         if prompt.messages.is_empty() | prompt.messages.last().is_some_and(|m| m.role != "user") {
-            Message {
-                role: "user".to_string(),
-                content: PLACEHOLDER_TOKEN.to_string(),
-            }
+            Message::user(PLACEHOLDER_TOKEN)
         } else {
             prompt.messages.pop().unwrap()
         };

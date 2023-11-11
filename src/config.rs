@@ -75,19 +75,17 @@ impl Default for Prompt {
     /// default to openai and gpt 4 with a preset message telling the
     /// model to behave like smart version of cat.
     fn default() -> Self {
-        let messages = vec![Message {
-                role: "system".to_string(),
-                content: "\
-                    You are an extremely skilled programmer with a keen eye for detail and an emphasis on readable code. \
-                    You have been tasked with acting as a smart version of the cat unix program. You take text and a prompt in and write text out. \
-                    For that reason, it is of crucial importance to just write the desired output. Do not under any circumstance write any comment or thought \
-                    as you output will be piped into other programs. Do not write the markdown delimiters for code as well. \
-                    Sometimes you will be asked to implement or extend some input code. Same thing goes here, write only what was asked because what you write will \
-                    be directly added to the user's editor. \
-                    Never ever write ``` around the code. \
-                    Now let's make something great together! \
-                ".to_string(),
-            }
+        let messages = vec![
+            Message::system( "\
+                You are an extremely skilled programmer with a keen eye for detail and an emphasis on readable code. \
+                You have been tasked with acting as a smart version of the cat unix program. You take text and a prompt in and write text out. \
+                For that reason, it is of crucial importance to just write the desired output. Do not under any circumstance write any comment or thought \
+                as you output will be piped into other programs. Do not write the markdown delimiters for code as well. \
+                Sometimes you will be asked to implement or extend some input code. Same thing goes here, write only what was asked because what you write will \
+                be directly added to the user's editor. \
+                Never ever write ``` around the code. \
+                Now let's make something great together! \
+            ")
         ];
         Prompt {
             api: Api::Openai,
@@ -101,6 +99,21 @@ impl Default for Prompt {
 pub struct Message {
     pub role: String,
     pub content: String,
+}
+
+impl Message {
+    pub fn user(content: &str) -> Message {
+        Message {
+            role: "user".to_string(),
+            content: content.to_string(),
+        }
+    }
+    pub fn system(content: &str) -> Message {
+        Message {
+            role: "system".to_string(),
+            content: content.to_string(),
+        }
+    }
 }
 
 fn resolve_config_path() -> PathBuf {
@@ -230,6 +243,7 @@ mod tests {
 
         assert_eq!(result, Path::new(&default_path));
     }
+
     #[test]
     fn test_ensure_config_files_not_existing() -> std::io::Result<()> {
         let temp_dir = tempfile::TempDir::new()?;
@@ -252,6 +266,7 @@ mod tests {
         assert!(prompts_path.exists());
         Ok(())
     }
+
     #[test]
     fn test_ensure_config_files_already_existing() -> std::io::Result<()> {
         let temp_dir = tempfile::TempDir::new()?;
