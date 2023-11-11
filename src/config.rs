@@ -246,18 +246,32 @@ mod tests {
     #[test]
     fn resolver_custom_config_path() {
         let temp_path = "/tmp/custom_path";
+        let original_value = env::var(CUSTOM_CONFIG_ENV_VAR);
+
         env::set_var(CUSTOM_CONFIG_ENV_VAR, temp_path);
         let result = resolve_config_path();
+
+        match original_value {
+            Ok(val) => env::set_var(CUSTOM_CONFIG_ENV_VAR, val),
+            Err(_) => env::remove_var(CUSTOM_CONFIG_ENV_VAR),
+        }
 
         assert_eq!(result, Path::new(temp_path));
     }
 
     #[test]
     fn resolve_default_config_path() {
+        let original_value = env::var(CUSTOM_CONFIG_ENV_VAR);
+
         env::remove_var(CUSTOM_CONFIG_ENV_VAR);
         let home_dir = env::var("HOME").expect("HOME not defined");
         let default_path = PathBuf::new().join(home_dir).join(DEFAULT_CONFIG_PATH);
         let result = resolve_config_path();
+
+        match original_value {
+            Ok(val) => env::set_var(CUSTOM_CONFIG_ENV_VAR, val),
+            Err(_) => env::remove_var(CUSTOM_CONFIG_ENV_VAR),
+        }
 
         assert_eq!(result, Path::new(&default_path));
     }
@@ -265,17 +279,20 @@ mod tests {
     #[test]
     fn test_ensure_config_files_not_existing() -> std::io::Result<()> {
         let temp_dir = tempfile::TempDir::new()?;
-        let original_value = env::var("CUSTOM_CONFIG_ENV_VAR");
-        env::set_var("CUSTOM_CONFIG_ENV_VAR", temp_dir.path());
+        let original_value = env::var(CUSTOM_CONFIG_ENV_VAR);
+        env::set_var(CUSTOM_CONFIG_ENV_VAR, temp_dir.path());
 
         let api_keys_path = api_keys_path();
         let prompts_path = prompts_path();
 
+        assert!(!api_keys_path.exists());
+        assert!(!prompts_path.exists());
+
         let result = ensure_config_files(false);
 
         match original_value {
-            Ok(val) => env::set_var("CUSTOM_CONFIG_ENV_VAR", val),
-            Err(_) => env::remove_var("CUSTOM_CONFIG_ENV_VAR"),
+            Ok(val) => env::set_var(CUSTOM_CONFIG_ENV_VAR, val),
+            Err(_) => env::remove_var(CUSTOM_CONFIG_ENV_VAR),
         }
 
         result?;
@@ -289,7 +306,7 @@ mod tests {
     fn test_ensure_config_files_already_existing() -> std::io::Result<()> {
         let temp_dir = tempfile::TempDir::new()?;
 
-        let original_value = env::var("CUSTOM_CONFIG_ENV_VAR");
+        let original_value = env::var(CUSTOM_CONFIG_ENV_VAR);
         env::set_var(CUSTOM_CONFIG_ENV_VAR, temp_dir.path());
 
         let api_keys_path = api_keys_path();
@@ -306,8 +323,8 @@ mod tests {
 
         // Restoring the original environment variable
         match original_value {
-            Ok(val) => env::set_var("CUSTOM_CONFIG_ENV_VAR", val),
-            Err(_) => env::remove_var("CUSTOM_CONFIG_ENV_VAR"),
+            Ok(val) => env::set_var(CUSTOM_CONFIG_ENV_VAR, val),
+            Err(_) => env::remove_var(CUSTOM_CONFIG_ENV_VAR),
         }
 
         result?;

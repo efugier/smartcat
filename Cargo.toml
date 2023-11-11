@@ -5,7 +5,7 @@ Putting a brain behind `cat`.
 WIP cli interface to language model to bring them in the Unix ecosystem 🐈‍⬛
 '''
 license = "MIT OR Apache-2.0"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -18,4 +18,4 @@ ureq = { version="2", features = ["json"] }
 serde = { version = "1", features = ["derive"] }
 
 [dev-dependencies]
-tempfile = "3.8.1"
+tempfile = "3"

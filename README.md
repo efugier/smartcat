@@ -208,3 +208,10 @@ content ='''Write tests using pytest for the following code. Parametrized it if 
 
 see [the config setup file](./src/config.rs) for more details.
 
+## Developping
+
+Some test rely on environement variables and don't behave well while multi threading so make sure to test with
+
+```
+cargo test -- --test-threads=1
+```
