@@ -344,4 +344,57 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_ensure_config_files_serialization() -> std::io::Result<()> {
+        // Setup paths
+        let temp_dir = tempfile::TempDir::new()?;
+        let original_value = env::var(CUSTOM_CONFIG_ENV_VAR);
+        env::set_var(CUSTOM_CONFIG_ENV_VAR, temp_dir.path());
+
+        let api_keys_path = api_keys_path();
+        let prompts_path = prompts_path();
+
+        assert!(!api_keys_path.exists());
+        assert!(!prompts_path.exists());
+
+        let result = ensure_config_files(false);
+
+        match original_value {
+            Ok(val) => env::set_var(CUSTOM_CONFIG_ENV_VAR, val),
+            Err(_) => env::remove_var(CUSTOM_CONFIG_ENV_VAR),
+        }
+
+        result?;
+
+        // Read back the files and deserialize
+        let api_config_contents = fs::read_to_string(&api_keys_path)?;
+        let prompts_config_contents = fs::read_to_string(&prompts_path)?;
+
+        // Deserialize contents to expected data structures
+        // TODO: would be better to use `get_config` and `get_prompts` but
+        // current implementation does not allow for error management that would
+        // enable safe environement variable manipulation
+        let api_config: HashMap<String, ApiConfig> =
+            toml::from_str(&api_config_contents).expect("Failed to deserialize API config");
+
+        let prompt_config: HashMap<String, Prompt> =
+            toml::from_str(&prompts_config_contents).expect("Failed to deserialize prompts config");
+
+        // Check if the content matches the default values
+        assert_eq!(
+            api_config.get(&Prompt::default().api.to_string()),
+            Some(&ApiConfig::default_with_api_key(
+                "<insert_api_key_here>".to_string()
+            ))
+        );
+
+        let default_prompt = Prompt::default();
+        assert_eq!(prompt_config.get("default"), Some(&default_prompt));
+
+        let empty_prompt = Prompt::empty();
+        assert_eq!(prompt_config.get("empty"), Some(&empty_prompt));
+
+        Ok(())
+    }
 }

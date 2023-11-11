@@ -36,6 +36,8 @@ Options:
           Print version
 ```
 
+Currently only supporting openai but build to work with multple ones seemlessly if competitors emerge.
+
 ## Installation
 
 ```
@@ -47,7 +49,8 @@ cargo install smartcat
 Or download directly the binary compiled for your platform from the [release page](https://github.com/efugier/smartcat/releases).
 
 
-On the first run, the program will ask you to generate some default configuration if it cannot find them. More about that in the [configuration section](#Configuration).
+On the first run, the program will ask you to generate some default configuration files if it cannot find them.
+More about that in the [configuration section](#Configuration).
 
 ## A few examples to get started
 
@@ -102,11 +105,12 @@ And programmers, conductors, who make the engines loud.
 
 ## Integrating with editors
 
-The key for a good integration in editors is a good default prompt and the usage of the `-r` flag to decide whether to replace or extend the selection.
+The key for a good integration in editors is a good default prompt (or set of) combined with the `-c` flag for precising the task at hand.
+The `-r` flag can be used to decide whether to replace or extend the selection.
 
 ### Vim
 
-You can also integrate this with your editor. For instance in Vim
+Start by selecting some text, then press `:`. You can then pipe the selection content to `smartcat`.
 
 ```
 :'<,'> | sc -c "replace the versions with wildcards"
@@ -134,7 +138,7 @@ With some remapping you may have your most reccurrent action attached to few key
 
 ### Helix
 
-In helix, simply press the pipe key to redirect the selection to `smarcat`.
+Same concept, different shorct, simply press the pipe key to redirect the selection to `smarcat`.
 
 ```
 pipe: sc write_test -r
@@ -178,7 +182,7 @@ Never ever write ``` around the code. \
 Now let's make something great together!
 """
 
-[empty]
+[empty]  # always nice to have an empty prompt available
 api = "openai"
 model = "gpt-4-1106-preview"
 messages = []
@@ -219,3 +223,7 @@ Some tests rely on environement variables and don't behave well with multi-threa
 ```
 cargo test -- --test-threads=1
 ```
+
+### State of the project
+
+Smartcat has reached an acceptable feature set. The focus is now on upgrading the codebase quality as I hadn't really touched rust since 2019 and it shows.
