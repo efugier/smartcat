@@ -40,6 +40,8 @@ Currently only supporting openai but build to work with multple ones seemlessly 
 
 ## Installation
 
+With [rust and cargo](https://www.rust-lang.org/tools/install) installed and setup:
+
 ```
 cargo install smartcat
 ```
