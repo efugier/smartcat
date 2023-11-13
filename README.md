@@ -1,6 +1,6 @@
 # smartcat (sc) 🐈‍⬛
 
-Puts a brain behind `cat`! WIP cli interface to bring language models in the Unix ecosystem 🐈‍⬛
+Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow power users to make the most out of llms. 🐈‍⬛
 
 - [Installation](#installation)
 - [A few examples to get started](#a-few-examples-to-get-started)
@@ -57,6 +57,8 @@ cargo install smartcat
 Or download directly the binary compiled for your platform from the [release page](https://github.com/efugier/smartcat/releases).
 
 
+---
+
 On the first run, `smartcat` will ask you to generate some default configuration files if it cannot find them.
 More about that in the [configuration section](#Configuration).
 
@@ -67,7 +69,7 @@ A `default` prompt is needed for `smartcat` to know which api and model to hit.
 Ask anything without leaving you dear terminal
 
 ```
-sc -i "what's a sed command to remove trailaing whitespaces at the end of all non-markdown files?"
+sc -i "sed command to remove trailaing whitespaces at the end of all non-markdown files?"
 > sed -i '' 's/[ \t]*$//' *.* !(*.md)
 ```
 
@@ -103,10 +105,11 @@ sc -f Cargo.toml -c "translate the following file in json" | save Cargo.json
 ```
 
 ```
-cat my_stuff.py | sc \
-  -c "write a parametrized test suite for the following code using pytest" \
-  -s "output only the code, as a standalone file with the imports. \n```\n" \
-  -a "```" > test.py
+cat my_stuff.py | \
+sc -c "write a parametrized test suite for the following code using pytest" \
+-s "output only the code, as a standalone file with the imports. \n" \
+-a "" \
+> test.py
 ```
 
 If you find yourself reusing prompts often, you can create a dedicated config entries and it becomes the following:
@@ -161,7 +164,7 @@ will **append** at the end of the current selection the result of the language m
 
 With some remapping you may have your most reccurrent action attached to few keystrokes e.g. `<leader>wt`!
 
-#### Helix
+#### Helix and Kakoune
 
 Same concept, different shortcut, simply press the pipe key to redirect the selection to `smarcat`.
 
@@ -213,11 +216,11 @@ api = "openai"
 model = "gpt-4-1106-preview"
 messages = []
 
-[write_test]
+[write_tests]
 api = "openai"
 model = "gpt-4-1106-preview"
 
-[[write_test.messages]]
+[[write_tests.messages]]
 role = "system"
 content = """\
 You are an extremely skilled programmer with a keen eye for detail and an emphasis on readable code. \
@@ -230,7 +233,7 @@ Never ever write ``` around the code. \
 Now let's make something great together!
 """
 
-[[write_test.messages]]
+[[write_tests.messages]]
 role = "user"
 # the following placeholder string #[<input>] will be replaced by the input
 # each message seeks it and replaces it
@@ -254,7 +257,10 @@ cargo test -- --test-threads=1
 
 Smartcat has reached an acceptable feature set. The focus is now on upgrading the codebase quality as I hadn't really touched rust since 2019 and it shows.
 
-#### TODO/Ideas:
+#### TODO
 
 - make it available on homebrew
+
+#### Ideas:
+
 - interactive mode to have conversations and make the model iterate on the last answer

@@ -1,16 +1,16 @@
 [package]
 name = "smartcat"
-version = "0.1.12"
+version = "0.1.13"
 authors = ["Emilien Fugier <mail@emilienfugier.net>"]
 description = '''
 Putting a brain behind `cat`.
-WIP cli interface to bring language models in the Unix ecosystem 🐈‍⬛
+CLI interface to bring language models in the Unix ecosystem 🐈‍⬛
 '''
 license = "MIT OR Apache-2.0"
 edition = "2021"
 homepage = "https://github.com/efugier/smartcat"
 repository = "https://github.com/efugier/smartcat"
-keywords = ["cli", "pipe", "llm", "ai", "chatgpt"]
+keywords = ["cli", "pipe", "cat", "ai", "chatgpt"]
 categories = ["command-line-utilities", "text-processing"]
 readme="README.md"
 
@@ -40,5 +40,5 @@ assets = [
 ]
 extended-description = """\
 Putting a brain behind `cat`.
-WIP cli interface to bring language models in the Unix ecosystem 🐈‍⬛
+CLI interface to bring language models in the Unix ecosystem 🐈‍⬛
 """
