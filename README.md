@@ -5,31 +5,30 @@ Puts a brain behind cat!
 WIP cli interface to language models to bring them in the Unix ecosystem
 
 ```
-Putting a brain behind `cat`. WIP cli interface to language model to bring them in the Unix ecosystem 🐈‍⬛
+Putting a brain behind `cat`. WIP cli interface to bring language models in the Unix ecosystem 🐈‍⬛
 
 Usage: sc [OPTIONS] [PROMPT]
 
 Arguments:
-  [PROMPT]  which prompt in the config to fetch.
-  The config must have at least one named "default" containing which model and api to hit by default [default: default]
+  [PROMPT]  which prompt in the config to fetch [default: default]
 
 Options:
+  -s, --system-message <SYSTEM_MESSAGE>
+          system "config"  message to send after the prompt and  before the first user message
   -c, --command <COMMAND>
           custom prompt to append before the input
   -a, --after-input <AFTER_INPUT>
           suffix to add after the input and the custom prompt
-  -s, --system-message <SYSTEM_MESSAGE>
-          a system "config" message to send before the first user message
+  -r, --repeat-input
+          whether to repeat the input before the output, useful to extend instead of replacing
       --api <API>
-          which api to hit [possible values: openai, another-api-for-tests]
+          overrides which api to hit [possible values: openai, another-api-for-tests]
   -m, --model <MODEL>
-          which model (of the api) to use
+          overrides which model (of the api) to use
   -f, --file <FILE>
           skip reading from the input and read this file instead
-  -r, --repeat-input
-          wether to repeat the input before the output, useful to extend instead of replacing
   -i, --input <INPUT>
-          skips reading from input and use that value instead
+          skip reading from input and use that value instead
   -h, --help
           Print help
   -V, --version
@@ -51,8 +50,10 @@ cargo install smartcat
 Or download directly the binary compiled for your platform from the [release page](https://github.com/efugier/smartcat/releases).
 
 
-On the first run, the program will ask you to generate some default configuration files if it cannot find them.
+On the first run, `smartcat` will ask you to generate some default configuration files if it cannot find them.
 More about that in the [configuration section](#Configuration).
+
+A `default` prompt is needed for `smartcat` to know which api and model to hit.
 
 ## A few examples to get started
 

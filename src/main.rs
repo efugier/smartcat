@@ -20,28 +20,27 @@ mod config;
     long_about = None
 )]
 struct Cli {
-    /// which prompt in the config to fetch. The config must have at least one named "default"
-    /// containing which model and api to hit by default.
+    /// which prompt in the config to fetch
     #[arg(default_value_t = String::from("default"))]
     prompt: String,
-    #[command(flatten)]
-    custom_prompt_args: CustomPrompt,
-    /// a system "config" message to send before the first user message
+    /// system "config"  message to send after the prompt and  before the first user message
     #[arg(short, long)]
     system_message: Option<String>,
-    /// which api to hit
+    #[command(flatten)]
+    custom_prompt_args: CustomPrompt,
+    /// whether to repeat the input before the output, useful to extend instead of replacing
+    #[arg(short, long)]
+    repeat_input: bool,
+    /// overrides which api to hit
     #[arg(long)]
     api: Option<config::Api>,
     #[arg(short, long)]
-    /// which model (of the api) to use
+    /// overrides which model (of the api) to use
     model: Option<String>,
     /// skip reading from the input and read this file instead
     #[arg(short, long)]
     file: Option<String>,
-    /// wether to repeat the input before the output, useful to extend instead of replacing
-    #[arg(short, long)]
-    repeat_input: bool,
-    /// skips reading from input and use that value instead
+    /// skip reading from input and use that value instead
     #[arg(short, long)]
     input: Option<String>,
 }
