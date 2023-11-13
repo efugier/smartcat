@@ -1,12 +1,15 @@
 # smartcat (sc) 🐈‍⬛
 
-Puts a brain behind cat!
+Puts a brain behind `cat`! WIP cli interface to bring language models in the Unix ecosystem 🐈‍⬛
 
-WIP cli interface to language models to bring them in the Unix ecosystem
+- [Installation](#installation)
+- [A few examples to get started](#a-few-examples-to-get-started)
+  - [Manipulate file and text streams](#manipulate-file-and-text-streams)
+  - [Integrating with editors](#integrating-with-editors)
+- [Configuration](#configuration)
+- [Developping](#developping)
 
-```
-Putting a brain behind `cat`. WIP cli interface to bring language models in the Unix ecosystem 🐈‍⬛
-
+```text
 Usage: sc [OPTIONS] [PROMPT]
 
 Arguments:
@@ -35,9 +38,9 @@ Options:
           Print version
 ```
 
-Currently only supporting openai and chatgpt but build to work with multple ones seemlessly if competitors emerge.
+Currently only supporting openai and chatgpt but build to work with multiple ones seemlessly if competitors emerge.
 
-You can use it to **accomplish tasks in the CLI** but **also in your editors** (if they are good unix citizens, i.e. works with shells commands and text streams) to complete, refactor, write tests... anything!
+You can use it to **accomplish tasks in the CLI** but **also in your editors** (if they are good unix citizens, i.e. work with shell commands and text streams) to complete, refactor, write tests... anything!
 
 The key to make this work seamlessly is a good default prompt that tells the model to behave like a CLI tool an not write any unwanted text like markdown formatting or explanations.
 
@@ -125,12 +128,12 @@ Frameworks and libraries, like stations, stand so proud
 And programmers, conductors, who make the engines loud.
 ```
 
-## Integrating with editors
+### Integrating with editors
 
 The key for a good integration in editors is a good default prompt (or set of) combined with the `-c` flag for precising the task at hand.
 The `-r` flag can be used to decide whether to replace or extend the selection.
 
-### Vim
+#### Vim
 
 Start by selecting some text, then press `:`. You can then pipe the selection content to `smartcat`.
 
@@ -158,7 +161,7 @@ will **append** at the end of the current selection the result of the language m
 
 With some remapping you may have your most reccurrent action attached to few keystrokes e.g. `<leader>wt`!
 
-### Helix
+#### Helix
 
 Same concept, different shortcut, simply press the pipe key to redirect the selection to `smarcat`.
 
@@ -189,7 +192,7 @@ api_key = "<your_api_key>"
 
 ```toml
 [default]  # a prompt is a section
-api = "openai"
+api = "openai"  # must refer to an entry in the `.api_configs.toml` file
 model = "gpt-4-1106-preview"
 
 [[default.messages]]  # then you can list messages
@@ -231,7 +234,7 @@ Now let's make something great together!
 role = "user"
 # the following placeholder string #[<input>] will be replaced by the input
 # each message seeks it and replaces it
-content ='''Write tests using pytest for the following code. Parametrized it if appropriate.
+content ='''Write tests using pytest for the following code. Parametrize it if appropriate.
 
 #[<input>]
 '''
