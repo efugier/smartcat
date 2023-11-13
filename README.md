@@ -1,13 +1,39 @@
 # smartcat (sc) 🐈‍⬛
 
-Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow power users to make the most out of llms. 🐈‍⬛
+
+Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow power users to make the most out of llms.
+
+![](assets/workflow.gif)
 
 - [Installation](#installation)
+- [Usage](#usage)
 - [A few examples to get started](#a-few-examples-to-get-started)
   - [Manipulate file and text streams](#manipulate-file-and-text-streams)
   - [Integrating with editors](#integrating-with-editors)
 - [Configuration](#configuration)
 - [Developping](#developping)
+
+## Installation
+
+With [rust and cargo](https://www.rust-lang.org/tools/install) installed and setup:
+
+```
+cargo install smartcat
+```
+
+(the binary is named `sc`)
+
+Or download directly the binary compiled for your platform from the [release page](https://github.com/efugier/smartcat/releases).
+
+
+---
+
+On the first run, `smartcat` will ask you to generate some default configuration files if it cannot find them.
+More about that in the [configuration section](#Configuration).
+
+A `default` prompt is needed for `smartcat` to know which api and model to hit.
+
+## Usage
 
 ```text
 Usage: sc [OPTIONS] [PROMPT]
@@ -43,26 +69,6 @@ Currently only supporting openai and chatgpt but build to work with multiple one
 You can use it to **accomplish tasks in the CLI** but **also in your editors** (if they are good unix citizens, i.e. work with shell commands and text streams) to complete, refactor, write tests... anything!
 
 The key to make this work seamlessly is a good default prompt that tells the model to behave like a CLI tool an not write any unwanted text like markdown formatting or explanations.
-
-## Installation
-
-With [rust and cargo](https://www.rust-lang.org/tools/install) installed and setup:
-
-```
-cargo install smartcat
-```
-
-(the binary is named `sc`)
-
-Or download directly the binary compiled for your platform from the [release page](https://github.com/efugier/smartcat/releases).
-
-
----
-
-On the first run, `smartcat` will ask you to generate some default configuration files if it cannot find them.
-More about that in the [configuration section](#Configuration).
-
-A `default` prompt is needed for `smartcat` to know which api and model to hit.
 
 ## A few examples to get started
 

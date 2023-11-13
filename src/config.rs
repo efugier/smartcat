@@ -37,7 +37,7 @@ impl ToString for Api {
         match self {
             Api::Openai => "openai".to_string(),
             v => panic!(
-                "{:?} is not implemented, use on among {:?}",
+                "{:?} is not implemented, use one among {:?}",
                 v,
                 vec![Api::Openai]
             ),
