@@ -66,7 +66,7 @@ A `default` prompt is needed for `smartcat` to know which api and model to hit.
 
 ## A few examples to get started
 
-Ask anything without leaving you dear terminal
+Ask anything without leaving the confort of your terminal
 
 ```
 sc -i "sed command to remove trailaing whitespaces at the end of all non-markdown files?"
@@ -259,7 +259,7 @@ Smartcat has reached an acceptable feature set. The focus is now on upgrading th
 
 #### TODO
 
-- make it available on homebrew
+- [ ] make it available on homebrew
 
 #### Ideas:
 
