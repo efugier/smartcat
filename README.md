@@ -35,7 +35,9 @@ Options:
           Print version
 ```
 
-Currently only supporting openai but build to work with multple ones seemlessly if competitors emerge.
+Currently only supporting openai and chatgpt but build to work with multple ones seemlessly if competitors emerge.
+
+You can use it to accomplish tasks in the CLI but also in your editors (if they are good unix citizens, i.e. works with shells commands and text streams) to complete, refactor, write tests... anything!
 
 ## Installation
 
@@ -116,23 +118,23 @@ The `-r` flag can be used to decide whether to replace or extend the selection.
 Start by selecting some text, then press `:`. You can then pipe the selection content to `smartcat`.
 
 ```
-:'<,'> | sc -c "replace the versions with wildcards"
+:'<,'>!sc -c "replace the versions with wildcards"
 ```
 
 ```
-:'<,'> | sc -c "fix the typos in this text"
+:'<,'>!sc -c "fix the typos in this text"
 ```
 
-will replace the current selection with the same text transformed by the language model.
+will **replace** the current selection with the same text transformed by the language model.
 
 ```
-:'<,'> | sc -c "implement the traits FromStr and ToString for this struct" -r
+:'<,'>!sc -c "implement the traits FromStr and ToString for this struct" -r
 ```
 
-will append at the end of the current selection the result of the language model.
+will **append** at the end of the current selection the result of the language model.
 
 ```
-:'<,'> | sc write_test -r
+:'<,'>!sc write_test -r
 ```
 
 ...
@@ -141,10 +143,10 @@ With some remapping you may have your most reccurrent action attached to few key
 
 ### Helix
 
-Same concept, different shorct, simply press the pipe key to redirect the selection to `smarcat`.
+Same concept, different shortcut, simply press the pipe key to redirect the selection to `smarcat`.
 
 ```
-pipe: sc write_test -r
+pipe:sc write_test -r
 ```
 
 These are only some ideas to get started, go nuts!
