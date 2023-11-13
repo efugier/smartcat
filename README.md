@@ -37,7 +37,9 @@ Options:
 
 Currently only supporting openai and chatgpt but build to work with multple ones seemlessly if competitors emerge.
 
-You can use it to accomplish tasks in the CLI but also in your editors (if they are good unix citizens, i.e. works with shells commands and text streams) to complete, refactor, write tests... anything!
+You can use it to **accomplish tasks in the CLI** but **also in your editors** (if they are good unix citizens, i.e. works with shells commands and text streams) to complete, refactor, write tests... anything!
+
+The key to make this work seamlessly is a good default prompt that tells the model to behave like a CLI tool an not write any unwanted text like markdown formatting or explanations.
 
 ## Installation
 
@@ -58,6 +60,21 @@ More about that in the [configuration section](#Configuration).
 A `default` prompt is needed for `smartcat` to know which api and model to hit.
 
 ## A few examples to get started
+
+Ask anything without leaving you dear terminal
+
+```
+sc -i "what's a sed command to remove trailaing whitespaces at the end of all non-markdown files?"
+> sed -i '' 's/[ \t]*$//' *.* !(*.md)
+```
+
+```
+sc -i "shell script to migrate a repository from pipenv to poetry" >> poetry_mirgation.sh
+```
+
+use the `-i` so that it doesn't wait for piped input.
+
+### Manipulate file and text streams
 
 ```
 cat Cargo.toml | sc -c "write a short poem about the content of the file"
@@ -85,7 +102,7 @@ sc -f Cargo.toml -c "translate the following file in json" | save Cargo.json
 ```
 cat my_stuff.py | sc \
   -c "write a parametrized test suite for the following code using pytest" \
-  -s "output only the code, as a standalone file \n```\n" \
+  -s "output only the code, as a standalone file with the imports. \n```\n" \
   -a "```" > test.py
 ```
 
@@ -131,11 +148,11 @@ will **replace** the current selection with the same text transformed by the lan
 :'<,'>!sc -c "implement the traits FromStr and ToString for this struct" -r
 ```
 
-will **append** at the end of the current selection the result of the language model.
-
 ```
 :'<,'>!sc write_test -r
 ```
+
+will **append** at the end of the current selection the result of the language model.
 
 ...
 
@@ -156,6 +173,7 @@ These are only some ideas to get started, go nuts!
 - by default lives at `$HOME/.config/smartcat`
 - the directory can be set using the `SMARTCAT_CONFIG_PATH` environement variable
 - use `#[<input>]` as the placeholder for input when writing prompts
+- the default model is `gpt-4` but I recommend trying the latest ones and see which one works best for you. I currently use `gpt-4-1106-preview`.
 
 Two files are used:
 
@@ -232,3 +250,8 @@ cargo test -- --test-threads=1
 ### State of the project
 
 Smartcat has reached an acceptable feature set. The focus is now on upgrading the codebase quality as I hadn't really touched rust since 2019 and it shows.
+
+#### TODO/Ideas:
+
+- make it available on homebrew
+- interactive mode to have conversations and make the model iterate on the last answer
