@@ -270,3 +270,4 @@ Smartcat has reached an acceptable feature set. The focus is now on upgrading th
 #### Ideas:
 
 - interactive mode to have conversations and make the model iterate on the last answer
+- fetch more context from the codebase

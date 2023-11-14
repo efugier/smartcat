@@ -23,9 +23,12 @@ struct Cli {
     /// which prompt in the config to fetch
     #[arg(default_value_t = String::from("default"))]
     prompt: String,
-    /// system "config"  message to send after the prompt and  before the first user message
+    /// system "config"  message to send after the prompt and before the first user message
     #[arg(short, long)]
     system_message: Option<String>,
+    /// context files or string to include afther the system message and before first user message
+    #[arg(short, long)]
+    context: Option<String>,
     #[command(flatten)]
     custom_prompt_args: CustomPrompt,
     /// whether to repeat the input before the output, useful to extend instead of replacing
@@ -102,7 +105,8 @@ fn main() {
         &args.model,
         &args.custom_prompt_args.command,
         &args.custom_prompt_args.after_input,
-        &args.system_message,
+        args.system_message,
+        args.context,
     );
 
     debug!("{:?}", prompt);

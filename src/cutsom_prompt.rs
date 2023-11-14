@@ -1,4 +1,5 @@
 use log::debug;
+use std::fs;
 
 use crate::config::{Api, Message, Prompt, PLACEHOLDER_TOKEN};
 
@@ -8,7 +9,8 @@ pub fn customize_prompt(
     model: &Option<String>,
     command: &Option<String>,
     after_input: &Option<String>,
-    system_message: &Option<String>,
+    system_message: Option<String>,
+    context: Option<String>,
 ) -> Prompt {
     debug!("pre-customization prompt {:?}", prompt);
     // Override parameters
@@ -19,17 +21,31 @@ pub fn customize_prompt(
         prompt.model = model.to_owned();
     }
 
-    let first_user_message_index = prompt.messages.iter().position(|m| m.role == "system");
+    let mut first_user_message_index = prompt
+        .messages
+        .iter()
+        .position(|m| m.role == "user")
+        .unwrap_or(0);
 
-    // if there's a system message to add, add it before the first user message
-    if let Some(message_content) = system_message {
-        let system_message = Message::system(message_content);
-        if let Some(index) = first_user_message_index {
-            prompt.messages.insert(index, system_message);
-        } else {
-            prompt.messages.push(system_message);
+    // insert system or context messages
+    let mut maybe_insert_message = |content: Option<String>, prefix: Option<String>| {
+        if let Some(mut content) = content {
+            if let Some(mut pre) = prefix {
+                pre.push_str(&content);
+                content = pre;
+            }
+
+            let system_message = Message::system(&content);
+            prompt
+                .messages
+                .insert(first_user_message_index, system_message);
+            first_user_message_index += 1;
         }
-    }
+    };
+    maybe_insert_message(system_message, None);
+    // context can be a file
+    let context = context.map(|ctx| fs::read_to_string(&ctx).unwrap_or(ctx));
+    maybe_insert_message(context, Some("context:\n".to_string()));
 
     // if prompt customization was provided, add it in a new message
     if let Some(command_text) = command {
@@ -71,13 +87,15 @@ pub fn customize_prompt(
 
 #[cfg(test)]
 mod tests {
+    use std::io::Write;
+
     use super::*;
 
     #[test]
     fn test_customize_prompt_empty_no_overrides() {
         let prompt = Prompt::empty();
 
-        let customized = customize_prompt(prompt, &None, &None, &None, &None, &None);
+        let customized = customize_prompt(prompt, &None, &None, &None, &None, None, None);
         let default_prompt = Prompt::empty();
 
         assert_eq!(customized.api, default_prompt.api);
@@ -90,7 +108,8 @@ mod tests {
         let prompt = Prompt::empty();
         let api = Api::AnotherApiForTests;
 
-        let customized = customize_prompt(prompt, &Some(api.clone()), &None, &None, &None, &None);
+        let customized =
+            customize_prompt(prompt, &Some(api.clone()), &None, &None, &None, None, None);
         let default_prompt = Prompt::empty();
 
         assert_eq!(customized.api, Api::AnotherApiForTests);
@@ -102,7 +121,15 @@ mod tests {
         let prompt = Prompt::empty();
         let model = "test_model".to_owned();
 
-        let customized = customize_prompt(prompt, &None, &Some(model.clone()), &None, &None, &None);
+        let customized = customize_prompt(
+            prompt,
+            &None,
+            &Some(model.clone()),
+            &None,
+            &None,
+            None,
+            None,
+        );
 
         let default_prompt = Prompt::empty();
         assert_eq!(customized.model, model);
@@ -114,8 +141,15 @@ mod tests {
         let prompt = Prompt::empty();
         let command = "test_command".to_owned();
 
-        let customized =
-            customize_prompt(prompt, &None, &None, &Some(command.clone()), &None, &None);
+        let customized = customize_prompt(
+            prompt,
+            &None,
+            &None,
+            &Some(command.clone()),
+            &None,
+            None,
+            None,
+        );
 
         assert!(customized
             .messages
@@ -134,7 +168,8 @@ mod tests {
             &None,
             &None,
             &None,
-            &Some(system_message.clone()),
+            Some(system_message.clone()),
+            None,
         );
 
         assert_eq!(
@@ -161,7 +196,8 @@ mod tests {
             &None,
             &None,
             &None,
-            &Some(system_message.clone()),
+            Some(system_message.clone()),
+            None,
         );
 
         assert_eq!(
@@ -191,7 +227,8 @@ mod tests {
             &None,
             &None,
             &Some(after_input.clone()),
-            &None,
+            None,
+            None,
         );
 
         let last_message_content = &customized.messages.last().unwrap().content;
@@ -206,7 +243,7 @@ mod tests {
     fn test_customize_prompt_placeholder_existence() {
         let prompt = Prompt::empty();
 
-        let customized = customize_prompt(prompt, &None, &None, &None, &None, &None);
+        let customized = customize_prompt(prompt, &None, &None, &None, &None, None, None);
 
         assert!(
             customized
@@ -227,6 +264,9 @@ mod tests {
         let command = "test_command_override".to_owned();
         let after_input = " test_after_input_override".to_owned();
         let system_message = "system message override".to_owned();
+        let mut context_file = tempfile::NamedTempFile::new().unwrap();
+
+        context_file.write_all("hello there".as_bytes());
 
         let customized = customize_prompt(
             prompt,
@@ -234,7 +274,8 @@ mod tests {
             &Some(model.clone()),
             &Some(command.clone()),
             &Some(after_input.clone()),
-            &Some(system_message.clone()),
+            Some(system_message.clone()),
+            Some(context_file.path().to_str().unwrap().to_owned()),
         );
 
         assert_eq!(customized.api, api);
