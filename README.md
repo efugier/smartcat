@@ -36,22 +36,25 @@ A `default` prompt is needed for `smartcat` to know which api and model to hit.
 ## Usage
 
 ```text
-Usage: sc [OPTIONS] [PROMPT]
+Usage: sc [OPTIONS] [CONFIG_PROMPT]
 
 Arguments:
-  [PROMPT]  which prompt in the config to fetch [default: default]
+  [CONFIG_PROMPT]  which prompt in the config to fetch [default: default]
 
 Options:
-  -s, --system-message <SYSTEM_MESSAGE>
-          system "config"  message to send after the prompt and  before the first user message
-  -c, --command <COMMAND>
-          custom prompt to append before the input
-  -a, --after-input <AFTER_INPUT>
-          suffix to add after the input and the custom prompt
   -r, --repeat-input
           whether to repeat the input before the output, useful to extend instead of replacing
+  -p, --custom-prompt <CUSTOM_PROMPT>
+          custom prompt to append before the input
+  -s, --system-message <SYSTEM_MESSAGE>
+          system "config"  message to send after the prompt and before the first user message
+  -c, --context <CONTEXT>
+          context string (will be file content if it resolves to an existing file's path) to
+          include after the system message and before first user message
+  -a, --after-input <AFTER_INPUT>
+          suffix to add after the input and the custom prompt
       --api <API>
-          overrides which api to hit [possible values: openai, another-api-for-tests]
+          overrides which api to hit [possible values: openai]
   -m, --model <MODEL>
           overrides which model (of the api) to use
   -f, --file <FILE>
@@ -88,7 +91,7 @@ use the `-i` so that it doesn't wait for piped input.
 ### Manipulate file and text streams
 
 ```
-cat Cargo.toml | sc -c "write a short poem about the content of the file"
+cat Cargo.toml | sc -p "write a short poem about the content of the file"
 
 A file named package,
 Holds the keys of a software's age.
@@ -107,12 +110,12 @@ A program is born, fulfilling needs.
 ```
 
 ```
-sc -f Cargo.toml -c "translate the following file in json" | save Cargo.json
+sc -f Cargo.toml -p "translate the following file in json" | save Cargo.json
 ```
 
 ```
 cat my_stuff.py | \
-sc -c "write a parametrized test suite for the following code using pytest" \
+sc -p "write a parametrized test suite for the following code using pytest" \
 -s "output only the code, as a standalone file with the imports. \n" \
 -a "" \
 > test.py
@@ -139,7 +142,7 @@ And programmers, conductors, who make the engines loud.
 
 ### Integrating with editors
 
-The key for a good integration in editors is a good default prompt (or set of) combined with the `-c` flag for precising the task at hand.
+The key for a good integration in editors is a good default prompt (or set of) combined with the `-p` flag for precising the task at hand.
 The `-r` flag can be used to decide whether to replace or extend the selection.
 
 #### Vim
@@ -147,17 +150,17 @@ The `-r` flag can be used to decide whether to replace or extend the selection.
 Start by selecting some text, then press `:`. You can then pipe the selection content to `smartcat`.
 
 ```
-:'<,'>!sc -c "replace the versions with wildcards"
+:'<,'>!sc -p "replace the versions with wildcards"
 ```
 
 ```
-:'<,'>!sc -c "fix the typos in this text"
+:'<,'>!sc -p "fix the typos in this text"
 ```
 
 will **replace** the current selection with the same text transformed by the language model.
 
 ```
-:'<,'>!sc -c "implement the traits FromStr and ToString for this struct" -r
+:'<,'>!sc -p "implement the traits FromStr and ToString for this struct" -r
 ```
 
 ```

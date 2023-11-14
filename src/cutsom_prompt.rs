@@ -7,7 +7,7 @@ pub fn customize_prompt(
     mut prompt: Prompt,
     api: &Option<Api>,
     model: &Option<String>,
-    command: &Option<String>,
+    custom_prompt: &Option<String>,
     after_input: &Option<String>,
     system_message: Option<String>,
     context: Option<String>,
@@ -48,7 +48,7 @@ pub fn customize_prompt(
     maybe_insert_message(context, Some("context:\n".to_string()));
 
     // if prompt customization was provided, add it in a new message
-    if let Some(command_text) = command {
+    if let Some(command_text) = custom_prompt {
         let mut prompt_message = String::from(command_text);
         if !prompt_message.contains(PLACEHOLDER_TOKEN) {
             prompt_message.push_str(PLACEHOLDER_TOKEN);
@@ -201,15 +201,63 @@ mod tests {
         );
 
         assert_eq!(
-            customized.messages[1].content, system_message,
+            customized.messages[0].content, system_message,
             "{:?}",
             customized.messages
         );
         assert_eq!(
-            customized.messages[1].role, "system",
+            customized.messages[0].role, "system",
             "{:?}",
             customized.messages
         );
+    }
+
+    #[test]
+    fn test_customize_prompt_with_context_file() {
+        let mut prompt = Prompt::empty();
+        prompt.messages.push(Message::user("user message"));
+
+        let context_content = "hello there".to_owned();
+        let mut context_file = tempfile::NamedTempFile::new().unwrap();
+        context_file.write_all(context_content.as_bytes()).unwrap();
+
+        let customized = customize_prompt(
+            prompt,
+            &None,
+            &None,
+            &None,
+            &None,
+            None,
+            Some(context_file.path().to_str().unwrap().to_owned()),
+        );
+
+        assert_eq!(
+            customized.messages[0].content,
+            format!("context:\n{}", context_content)
+        );
+        assert_eq!(customized.messages[0].role, "system");
+    }
+
+    #[test]
+    fn test_customize_prompt_with_context_string() {
+        let prompt = Prompt::empty();
+        let context_content = "hello there";
+
+        let customized = customize_prompt(
+            prompt,
+            &None,
+            &None,
+            &None,
+            &None,
+            None,
+            Some(context_content.to_string()),
+        );
+
+        assert_eq!(
+            customized.messages[0].content,
+            format!("context:\n{}", context_content)
+        );
+        assert_eq!(customized.messages[0].role, "system");
     }
 
     #[test]
@@ -264,9 +312,10 @@ mod tests {
         let command = "test_command_override".to_owned();
         let after_input = " test_after_input_override".to_owned();
         let system_message = "system message override".to_owned();
-        let mut context_file = tempfile::NamedTempFile::new().unwrap();
 
-        context_file.write_all("hello there".as_bytes());
+        let context_content = "hello there".to_owned();
+        let mut context_file = tempfile::NamedTempFile::new().unwrap();
+        context_file.write_all(context_content.as_bytes()).unwrap();
 
         let customized = customize_prompt(
             prompt,
@@ -286,6 +335,11 @@ mod tests {
             .any(|m| m.content.contains(&command)));
         assert_eq!(customized.messages[0].content, system_message);
         assert_eq!(customized.messages[0].role, "system");
+        assert_eq!(
+            customized.messages[1].content,
+            format!("context:\n{}", context_content)
+        );
+        assert_eq!(customized.messages[1].role, "system");
         assert!(
             customized
                 .messages

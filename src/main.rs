@@ -1,4 +1,4 @@
-use clap::{Args, Parser};
+use clap::Parser;
 use log::debug;
 use std::fs;
 use std::io;
@@ -22,23 +22,28 @@ mod config;
 struct Cli {
     /// which prompt in the config to fetch
     #[arg(default_value_t = String::from("default"))]
-    prompt: String,
-    /// system "config"  message to send after the prompt and before the first user message
-    #[arg(short, long)]
-    system_message: Option<String>,
-    /// context files or string to include afther the system message and before first user message
-    #[arg(short, long)]
-    context: Option<String>,
-    #[command(flatten)]
-    custom_prompt_args: CustomPrompt,
+    config_prompt: String,
     /// whether to repeat the input before the output, useful to extend instead of replacing
     #[arg(short, long)]
     repeat_input: bool,
+    /// custom prompt to append before the input
+    #[arg(short = 'p', long)]
+    custom_prompt: Option<String>,
+    /// system "config"  message to send after the prompt and before the first user message
+    #[arg(short, long)]
+    system_message: Option<String>,
+    /// context string (will be file content if it resolves to an existing file's path) to
+    /// include after the system message and before first user message
+    #[arg(short, long)]
+    context: Option<String>,
+    /// suffix to add after the input and the custom prompt
+    #[arg(short, long)]
+    after_input: Option<String>,
     /// overrides which api to hit
     #[arg(long)]
     api: Option<config::Api>,
-    #[arg(short, long)]
     /// overrides which model (of the api) to use
+    #[arg(short, long)]
     model: Option<String>,
     /// skip reading from the input and read this file instead
     #[arg(short, long)]
@@ -46,17 +51,6 @@ struct Cli {
     /// skip reading from input and use that value instead
     #[arg(short, long)]
     input: Option<String>,
-}
-
-#[derive(Debug, Args)]
-#[group(id = "custom_prompt")]
-struct CustomPrompt {
-    /// custom prompt to append before the input
-    #[arg(short, long)]
-    command: Option<String>,
-    /// suffix to add after the input and the custom prompt
-    #[arg(short, long)]
-    after_input: Option<String>,
 }
 
 fn main() {
@@ -95,16 +89,18 @@ fn main() {
     let available_prompts: Vec<&String> = prompts.keys().collect();
     let prompt_not_found_error = format!(
         "Prompt {} not found, availables ones are: {:?}",
-        &args.prompt, &available_prompts
+        &args.config_prompt, &available_prompts
     );
-    let prompt = prompts.remove(&args.prompt).expect(&prompt_not_found_error);
+    let prompt = prompts
+        .remove(&args.config_prompt)
+        .expect(&prompt_not_found_error);
 
     let prompt = cutsom_prompt::customize_prompt(
         prompt,
         &args.api,
         &args.model,
-        &args.custom_prompt_args.command,
-        &args.custom_prompt_args.after_input,
+        &args.custom_prompt,
+        &args.after_input,
         args.system_message,
         args.context,
     );
