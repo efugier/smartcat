@@ -1,13 +1,29 @@
-# smartcat (sc) 🐈‍⬛
+<p align="center">
+  <a href="https://github.com/efugier/smartcat/discussions">
+    <img src="https://img.shields.io/badge/commmunity-discussion-blue?style=flat-square" alt="community discussion">
+  </a>
+  <a href="https://github.com/efugier/smartcat/actions/workflows/ci.yml">
+      <img src="https://github.com/efugier/smartcat/actions/workflows/ci.yml/badge.svg?branch=main" alt="Github Actions CI Build Status">
+  </a>
+  <a href="https://crates.io/crates/smartcat">
+      <img src="https://img.shields.io/crates/v/smartcat.svg?style=flat-square" alt="crates.io">
+  </a>
+  <br>
+</p>
 
+<p align="center">
+  <img src="assets/sc_logo.png" width="333">
+</p>
+
+# smartcat (sc)
 
 Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow power users to make the most out of llms.
 
 ![](assets/workflow.gif)
 
-- [Installation](#installation)
+- [Installation](#installation-)
 - [Usage](#usage)
-- [A few examples to get started](#a-few-examples-to-get-started)
+- [A few examples to get started 🐈‍⬛](#a-few-examples-to-get-started-)
   - [Manipulate file and text streams](#manipulate-file-and-text-streams)
   - [Integrating with editors](#integrating-with-editors)
 - [Configuration](#configuration)
@@ -73,7 +89,7 @@ You can use it to **accomplish tasks in the CLI** but **also in your editors** (
 
 The key to make this work seamlessly is a good default prompt that tells the model to behave like a CLI tool an not write any unwanted text like markdown formatting or explanations.
 
-## A few examples to get started
+## A few examples to get started 🐈‍⬛
 
 Ask anything without leaving the confort of your terminal
 
