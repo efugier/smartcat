@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/sc_logo.png" width="333">
+  <img src="assets/sc_logo.png" width="200">
 </p>
 
 # smartcat (sc)
