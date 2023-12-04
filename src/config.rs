@@ -70,11 +70,13 @@ impl ApiConfig {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Prompt {
     pub api: Api,
     pub model: String,
     pub messages: Vec<Message>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub temperature: Option<f32>,
 }
 
 impl Default for Prompt {
@@ -96,6 +98,7 @@ impl Default for Prompt {
         Prompt {
             api: Api::Openai,
             model: String::from("gpt-4"),
+            temperature: None,
             messages,
         }
     }
@@ -107,6 +110,7 @@ impl Prompt {
         Prompt {
             api: Api::Openai,
             model: Prompt::default().model,
+            temperature: None,
             messages,
         }
     }

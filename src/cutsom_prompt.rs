@@ -11,6 +11,7 @@ pub fn customize_prompt(
     after_input: &Option<String>,
     system_message: Option<String>,
     context: Option<String>,
+    temprature: Option<f32>,
 ) -> Prompt {
     debug!("pre-customization prompt {:?}", prompt);
     // Override parameters
@@ -78,6 +79,9 @@ pub fn customize_prompt(
         last_message.content.push_str(after_input_text);
     }
 
+    if temprature.is_some() {
+        prompt.temperature = temprature;
+    }
     prompt.messages.push(last_message);
 
     debug!("post-customization prompt {:?}", prompt);
@@ -95,11 +99,12 @@ mod tests {
     fn test_customize_prompt_empty_no_overrides() {
         let prompt = Prompt::empty();
 
-        let customized = customize_prompt(prompt, &None, &None, &None, &None, None, None);
+        let customized = customize_prompt(prompt, &None, &None, &None, &None, None, None, None);
         let default_prompt = Prompt::empty();
 
         assert_eq!(customized.api, default_prompt.api);
         assert_eq!(customized.model, default_prompt.model);
+        assert_eq!(customized.temperature, default_prompt.temperature);
         assert_eq!(customized.messages, vec![Message::user(PLACEHOLDER_TOKEN)]);
     }
 
@@ -108,8 +113,16 @@ mod tests {
         let prompt = Prompt::empty();
         let api = Api::AnotherApiForTests;
 
-        let customized =
-            customize_prompt(prompt, &Some(api.clone()), &None, &None, &None, None, None);
+        let customized = customize_prompt(
+            prompt,
+            &Some(api.clone()),
+            &None,
+            &None,
+            &None,
+            None,
+            None,
+            None,
+        );
         let default_prompt = Prompt::empty();
 
         assert_eq!(customized.api, Api::AnotherApiForTests);
@@ -127,6 +140,7 @@ mod tests {
             &Some(model.clone()),
             &None,
             &None,
+            None,
             None,
             None,
         );
@@ -149,6 +163,7 @@ mod tests {
             &None,
             None,
             None,
+            None,
         );
 
         assert!(customized
@@ -169,6 +184,7 @@ mod tests {
             &None,
             &None,
             Some(system_message.clone()),
+            None,
             None,
         );
 
@@ -197,6 +213,7 @@ mod tests {
             &None,
             &None,
             Some(system_message.clone()),
+            None,
             None,
         );
 
@@ -229,6 +246,7 @@ mod tests {
             &None,
             None,
             Some(context_file.path().to_str().unwrap().to_owned()),
+            None,
         );
 
         assert_eq!(
@@ -251,6 +269,7 @@ mod tests {
             &None,
             None,
             Some(context_content.to_string()),
+            None,
         );
 
         assert_eq!(
@@ -258,6 +277,16 @@ mod tests {
             format!("context:\n{}", context_content)
         );
         assert_eq!(customized.messages[0].role, "system");
+    }
+
+    #[test]
+    fn test_customize_prompt_temperature_override() {
+        let prompt = Prompt::empty();
+
+        let customized =
+            customize_prompt(prompt, &None, &None, &None, &None, None, None, Some(42.));
+
+        assert_eq!(customized.temperature, Some(42.));
     }
 
     #[test]
@@ -277,6 +306,7 @@ mod tests {
             &Some(after_input.clone()),
             None,
             None,
+            None,
         );
 
         let last_message_content = &customized.messages.last().unwrap().content;
@@ -291,7 +321,7 @@ mod tests {
     fn test_customize_prompt_placeholder_existence() {
         let prompt = Prompt::empty();
 
-        let customized = customize_prompt(prompt, &None, &None, &None, &None, None, None);
+        let customized = customize_prompt(prompt, &None, &None, &None, &None, None, None, None);
 
         assert!(
             customized
@@ -312,6 +342,7 @@ mod tests {
         let command = "test_command_override".to_owned();
         let after_input = " test_after_input_override".to_owned();
         let system_message = "system message override".to_owned();
+        let temperature = Some(42.);
 
         let context_content = "hello there".to_owned();
         let mut context_file = tempfile::NamedTempFile::new().unwrap();
@@ -325,10 +356,12 @@ mod tests {
             &Some(after_input.clone()),
             Some(system_message.clone()),
             Some(context_file.path().to_str().unwrap().to_owned()),
+            temperature,
         );
 
         assert_eq!(customized.api, api);
         assert_eq!(customized.model, model);
+        assert_eq!(customized.temperature, temperature);
         assert!(customized
             .messages
             .iter()

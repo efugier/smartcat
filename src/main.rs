@@ -39,18 +39,21 @@ struct Cli {
     /// suffix to add after the input and the custom prompt
     #[arg(short, long)]
     after_input: Option<String>,
-    /// overrides which api to hit
-    #[arg(long)]
-    api: Option<config::Api>,
-    /// overrides which model (of the api) to use
-    #[arg(short, long)]
-    model: Option<String>,
     /// skip reading from the input and read this file instead
     #[arg(short, long)]
     file: Option<String>,
     /// skip reading from input and use that value instead
     #[arg(short, long)]
     input: Option<String>,
+    /// temperature between 0 and 2, higher means answer further from the average
+    #[arg(short, long)]
+    temparature: Option<f32>,
+    /// overrides which api to hit
+    #[arg(long)]
+    api: Option<config::Api>,
+    /// overrides which model (of the api) to use
+    #[arg(short, long)]
+    model: Option<String>,
 }
 
 fn main() {
@@ -103,6 +106,7 @@ fn main() {
         &args.after_input,
         args.system_message,
         args.context,
+        args.temparature,
     );
 
     debug!("{:?}", prompt);
