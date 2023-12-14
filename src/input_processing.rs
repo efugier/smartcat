@@ -1,5 +1,5 @@
 use log::debug;
-use std::io::{Read, Result, Write};
+use std::io::{self, Read, Result, Write};
 
 use crate::config::{get_api_config, Prompt, PLACEHOLDER_TOKEN};
 use crate::request::{make_authenticated_request, OpenAiResponse};
@@ -66,7 +66,18 @@ pub fn process_input_with_request<R: Read, W: Write>(
 
     // make the request
     let response: OpenAiResponse = make_authenticated_request(api_config, prompt)
-        .unwrap()
+        .map_err(|e| match e {
+            ureq::Error::Status(status, response) => {
+                let body = match response.into_string() {
+                    Ok(body) => body,
+                    Err(_) => "(non-UTF-8 response)".to_owned(),
+                };
+                io::Error::other(format!(
+                    "API call failed with status code {status} and body: {body}"
+                ))
+            }
+            ureq::Error::Transport(transport) => io::Error::other(transport),
+        })?
         .into_json()?;
 
     let response_text = response.choices.first().unwrap().message.content.as_str();
