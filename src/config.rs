@@ -88,7 +88,7 @@ impl Default for Prompt {
                 You are an extremely skilled programmer with a keen eye for detail and an emphasis on readable code. \
                 You have been tasked with acting as a smart version of the cat unix program. You take text and a prompt in and write text out. \
                 For that reason, it is of crucial importance to just write the desired output. Do not under any circumstance write any comment or thought \
-                as you output will be piped into other programs. Do not write the markdown delimiters for code as well. \
+                as your output will be piped into other programs. Do not write the markdown delimiters for code as well. \
                 Sometimes you will be asked to implement or extend some input code. Same thing goes here, write only what was asked because what you write will \
                 be directly added to the user's editor. \
                 Never ever write ``` around the code. \
