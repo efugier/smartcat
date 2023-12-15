@@ -50,7 +50,7 @@ struct Cli {
     input: Option<String>,
     /// temperature between 0 and 2, higher means answer further from the average
     #[arg(short, long)]
-    temparature: Option<f32>,
+    temperature: Option<f32>,
     /// overrides which api to hit
     #[arg(long)]
     api: Option<config::Api>,
@@ -121,7 +121,7 @@ fn main() {
         &args.after_input,
         args.system_message,
         args.context,
-        args.temparature,
+        args.temperature,
     );
 
     debug!("{:?}", prompt);

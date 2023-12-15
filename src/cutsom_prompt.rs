@@ -11,7 +11,7 @@ pub fn customize_prompt(
     after_input: &Option<String>,
     system_message: Option<String>,
     context: Option<String>,
-    temprature: Option<f32>,
+    temperature: Option<f32>,
 ) -> Prompt {
     debug!("pre-customization prompt {:?}", prompt);
     // Override parameters
@@ -79,8 +79,8 @@ pub fn customize_prompt(
         last_message.content.push_str(after_input_text);
     }
 
-    if temprature.is_some() {
-        prompt.temperature = temprature;
+    if temperature.is_some() {
+        prompt.temperature = temperature;
     }
     prompt.messages.push(last_message);
 
