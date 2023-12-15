@@ -65,18 +65,19 @@ Options:
   -s, --system-message <SYSTEM_MESSAGE>
           system "config"  message to send after the prompt and before the first user message
   -c, --context <CONTEXT>
-          context string (will be file content if it resolves to an existing file's path) to
-          include after the system message and before first user message
+          context string (will be file content if it resolves to an existing file's path) to include after the system message and before first user message
   -a, --after-input <AFTER_INPUT>
           suffix to add after the input and the custom prompt
-      --api <API>
-          overrides which api to hit [possible values: openai]
-  -m, --model <MODEL>
-          overrides which model (of the api) to use
   -f, --file <FILE>
           skip reading from the input and read this file instead
   -i, --input <INPUT>
           skip reading from input and use that value instead
+  -t, --temparature <TEMPARATURE>
+          temperature between 0 and 2, higher means answer further from the average
+      --api <API>
+          overrides which api to hit [possible values: openai, another-api-for-tests]
+  -m, --model <MODEL>
+          overrides which model (of the api) to use
   -h, --help
           Print help
   -V, --version
@@ -285,8 +286,9 @@ Smartcat has reached an acceptable feature set. The focus is now on upgrading th
 #### TODO
 
 - [ ] make it available on homebrew
+- [ ] refactor the prompt parameters into a struct
 
 #### Ideas:
 
-- interactive mode to have conversations and make the model iterate on the last answer
+- interactive mode to have conversations and make the model iterate on the last answer (e.g. a flag `--start-conversation` to start and `--end-conversation` to end the current one, by default no conversation)
 - fetch more context from the codebase
