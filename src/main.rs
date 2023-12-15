@@ -99,7 +99,7 @@ fn main() {
                     error
                 )
             });
-        toml::from_str(&content).unwrap()
+        toml::from_str(&content).expect("failed to load the conversation file")
     } else {
         let mut prompts = config::get_prompts();
 

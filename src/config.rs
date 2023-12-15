@@ -179,7 +179,7 @@ pub fn get_api_config(api: &str) -> ApiConfig {
 pub fn get_prompts() -> HashMap<String, Prompt> {
     let content = fs::read_to_string(prompts_path())
         .unwrap_or_else(|error| panic!("Could not read file {:?}, {:?}", prompts_path(), error));
-    toml::from_str(&content).unwrap()
+    toml::from_str(&content).expect("could not parse prompt file content")
 }
 
 fn read_user_input() -> String {
