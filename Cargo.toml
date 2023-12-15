@@ -25,6 +25,7 @@ serde = { version = "1", features = ["derive"] }
 
 [dev-dependencies]
 tempfile = "3"
+serial_test = "2"
 
 [[bin]]
 path = "src/main.rs"

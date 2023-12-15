@@ -253,12 +253,14 @@ pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
     use std::env;
     use std::fs;
     use std::io::Read;
     use std::path::Path;
 
     #[test]
+    #[serial]
     fn resolver_custom_config_path() {
         let temp_path = "/tmp/custom_path";
         let original_value = env::var(CUSTOM_CONFIG_ENV_VAR);
@@ -275,6 +277,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn resolve_default_config_path() {
         let original_value = env::var(CUSTOM_CONFIG_ENV_VAR);
 
@@ -292,6 +295,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_ensure_config_files_not_existing() -> std::io::Result<()> {
         let temp_dir = tempfile::TempDir::new()?;
         let original_value = env::var(CUSTOM_CONFIG_ENV_VAR);
@@ -318,6 +322,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_ensure_config_files_already_existing() -> std::io::Result<()> {
         let temp_dir = tempfile::TempDir::new()?;
 
@@ -361,6 +366,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_ensure_config_files_serialization() -> std::io::Result<()> {
         // Setup paths
         let temp_dir = tempfile::TempDir::new()?;

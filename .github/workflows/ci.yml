@@ -19,6 +19,6 @@ jobs:
     - name: Build
       run: cargo build --verbose
     - name: Run tests
-      run: cargo test --verbose -- --test-threads=1
+      run: cargo test --verbose
     - name: Run help
       run: cargo run -- -h

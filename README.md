@@ -290,11 +290,7 @@ see [the config setup file](./src/config.rs) for more details.
 
 ## Developping
 
-Some tests rely on environement variables and don't behave well with multi-threading so make sure to test with
-
-```
-cargo test -- --test-threads=1
-```
+Some tests rely on environement variables and don't behave well with multi-threading. They are marked with `#[serial]` from the [serial_test](https://docs.rs/serial_test/latest/serial_test/index.html) crate.
 
 ### State of the project
 
