@@ -219,7 +219,11 @@ These are only some ideas to get started, go nuts!
 - use `#[<input>]` as the placeholder for input when writing prompts
 - the default model is `gpt-4` but I recommend trying the latest ones and see which one works best for you. I currently use `gpt-4-1106-preview`.
 
-Two files are used:
+Three files are used:
+
+`conversation.toml`
+
+stores the latest chat if you need to continue it
 
 `.api_configs.toml`
 
