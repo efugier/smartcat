@@ -72,11 +72,17 @@ pub fn process_input_with_request<R: Read, W: Write>(
                     Ok(body) => body,
                     Err(_) => "(non-UTF-8 response)".to_owned(),
                 };
-                io::Error::other(format!(
-                    "API call failed with status code {status} and body: {body}"
-                ))
+                io::Error::new(
+                    io::ErrorKind::Other,
+                    format!(
+                        "API call failed with status code {} and body: {}",
+                        status, body
+                    ),
+                )
             }
-            ureq::Error::Transport(transport) => io::Error::other(transport),
+            ureq::Error::Transport(transport) => {
+                io::Error::new(io::ErrorKind::Other, transport.to_string())
+            }
         })?
         .into_json()?;
 
