@@ -21,8 +21,8 @@ mod config;
 )]
 struct Cli {
     /// whether to extend the previous conversation or start a new one
-    #[arg(name = "continue conversation", long = "cc")]
-    continue_conversation: bool,
+    #[arg(short, long)]
+    extend_conversation: bool,
     /// which prompt in the config to fetch
     #[arg(default_value_t = String::from("default"))]
     config_prompt: String,
@@ -90,7 +90,7 @@ fn main() {
     config::ensure_config_files(true)
         .expect("Unable to verify that the config files exist or to generate new ones.");
 
-    let prompt: config::Prompt = if args.continue_conversation {
+    let prompt: config::Prompt = if args.extend_conversation {
         let content =
             fs::read_to_string(config::conversation_file_path()).unwrap_or_else(|error| {
                 panic!(

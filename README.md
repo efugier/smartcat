@@ -58,7 +58,7 @@ Arguments:
   [CONFIG_PROMPT]  which prompt in the config to fetch [default: default]
 
 Options:
-      --cc
+  -e, --extend-conversation
           whether to extend the previous conversation or start a new one
   -r, --repeat-input
           whether to repeat the input before the output, useful to extend instead of replacing
@@ -67,7 +67,8 @@ Options:
   -s, --system-message <SYSTEM_MESSAGE>
           system "config"  message to send after the prompt and before the first user message
   -c, --context <CONTEXT>
-          context string (will be file content if it resolves to an existing file's path) to include after the system message and before first user message
+          context string (will be file content if it resolves to an existing file's path) to
+          include after the system message and before first user message
   -a, --after-input <AFTER_INPUT>
           suffix to add after the input and the custom prompt
   -f, --file <FILE>
@@ -104,11 +105,11 @@ sc -i "sed command to remove trailaing whitespaces at the end of all non-markdow
 continue the last conversation
 
 ```
-sc --cc -i "and using awk?"
+sc -e -i "and using awk?"
 awk '{ sub(/[ \t]+$/, ""); print }' file.ext > file.tmp && mv file.tmp file.ext
 ```
 
-A new conversation will start and erase the previous one if the `--cc` flag is not there
+A new conversation will start and erase the previous one if the `-e` flag is not there
 
 ```
 sc -i "shell script to migrate a repository from pipenv to poetry" >> poetry_mirgation.sh
