@@ -53,10 +53,11 @@ impl From<Prompt> for OpenAiPrompt {
 
 pub fn make_authenticated_request(
     api_config: ApiConfig,
-    prompt: Prompt,
+    prompt: &Prompt,
 ) -> Result<ureq::Response, ureq::Error> {
     debug!("Trying to reach openai with {}", api_config.api_key);
     debug!("request content: {:?}", prompt);
+    let prompt = prompt.clone();
 
     let request = ureq::post(&api_config.url)
         .set("Content-Type", "application/json")

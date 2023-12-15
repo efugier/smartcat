@@ -58,6 +58,8 @@ Arguments:
   [CONFIG_PROMPT]  which prompt in the config to fetch [default: default]
 
 Options:
+      --cc
+          whether to extend the previous conversation or start a new one
   -r, --repeat-input
           whether to repeat the input before the output, useful to extend instead of replacing
   -p, --custom-prompt <CUSTOM_PROMPT>
@@ -99,9 +101,19 @@ sc -i "sed command to remove trailaing whitespaces at the end of all non-markdow
 > sed -i '' 's/[ \t]*$//' *.* !(*.md)
 ```
 
+continue the last conversation
+
+```
+sc --cc -i "and using awk?"
+awk '{ sub(/[ \t]+$/, ""); print }' file.ext > file.tmp && mv file.tmp file.ext
+```
+
+A new conversation will start and erase the previous one if the `--cc` flag is not there
+
 ```
 sc -i "shell script to migrate a repository from pipenv to poetry" >> poetry_mirgation.sh
 ```
+
 
 use the `-i` so that it doesn't wait for piped input.
 

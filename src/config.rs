@@ -13,6 +13,7 @@ const DEFAULT_CONFIG_PATH: &str = ".config/smartcat/";
 const CUSTOM_CONFIG_ENV_VAR: &str = "SMARTCAT_CONFIG_PATH";
 const API_KEYS_FILE: &str = ".api_configs.toml";
 const PROMPT_FILE: &str = "prompts.toml";
+const CONVERSATION_FILE: &str = "conversation.toml";
 
 #[derive(clap::ValueEnum, Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -70,7 +71,7 @@ impl ApiConfig {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 pub struct Prompt {
     pub api: Api,
     pub model: String,
@@ -116,7 +117,7 @@ impl Prompt {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Clone)]
 pub struct Message {
     pub role: String,
     pub content: String,
@@ -135,6 +136,12 @@ impl Message {
             content: content.to_string(),
         }
     }
+    pub fn assistant(content: &str) -> Message {
+        Message {
+            role: "assistant".to_string(),
+            content: content.to_string(),
+        }
+    }
 }
 
 fn resolve_config_path() -> PathBuf {
@@ -143,11 +150,15 @@ fn resolve_config_path() -> PathBuf {
         Err(_) => PathBuf::new().join(env!("HOME")).join(DEFAULT_CONFIG_PATH),
     }
 }
+
 fn prompts_path() -> PathBuf {
     resolve_config_path().join(PROMPT_FILE)
 }
 fn api_keys_path() -> PathBuf {
     resolve_config_path().join(API_KEYS_FILE)
+}
+pub fn conversation_file_path() -> PathBuf {
+    resolve_config_path().join(CONVERSATION_FILE)
 }
 
 pub fn get_api_config(api: &str) -> ApiConfig {

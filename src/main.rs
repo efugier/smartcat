@@ -2,7 +2,7 @@ use clap::Parser;
 use log::debug;
 use std::fs;
 use std::io;
-use std::io::Read;
+use std::io::{Read, Write};
 
 mod cutsom_prompt;
 mod input_processing;
@@ -20,6 +20,9 @@ mod config;
     long_about = None
 )]
 struct Cli {
+    /// whether to extend the previous conversation or start a new one
+    #[arg(name = "continue conversation", long = "cc")]
+    continue_conversation: bool,
     /// which prompt in the config to fetch
     #[arg(default_value_t = String::from("default"))]
     config_prompt: String,
@@ -87,16 +90,28 @@ fn main() {
     config::ensure_config_files(true)
         .expect("Unable to verify that the config files exist or to generate new ones.");
 
-    let mut prompts = config::get_prompts();
+    let prompt: config::Prompt = if args.continue_conversation {
+        let content =
+            fs::read_to_string(config::conversation_file_path()).unwrap_or_else(|error| {
+                panic!(
+                    "Could not read file {:?}, {:?}",
+                    config::conversation_file_path(),
+                    error
+                )
+            });
+        toml::from_str(&content).unwrap()
+    } else {
+        let mut prompts = config::get_prompts();
 
-    let available_prompts: Vec<&String> = prompts.keys().collect();
-    let prompt_not_found_error = format!(
-        "Prompt {} not found, availables ones are: {:?}",
-        &args.config_prompt, &available_prompts
-    );
-    let prompt = prompts
-        .remove(&args.config_prompt)
-        .expect(&prompt_not_found_error);
+        let available_prompts: Vec<&String> = prompts.keys().collect();
+        let prompt_not_found_error = format!(
+            "Prompt {} not found, availables ones are: {:?}",
+            &args.config_prompt, &available_prompts
+        );
+        prompts
+            .remove(&args.config_prompt)
+            .expect(&prompt_not_found_error)
+    };
 
     let prompt = cutsom_prompt::customize_prompt(
         prompt,
@@ -111,14 +126,23 @@ fn main() {
 
     debug!("{:?}", prompt);
 
-    if let Err(e) = input_processing::process_input_with_request(
+    match input_processing::process_input_with_request(
         prompt,
         &mut input,
         args.input,
         &mut output,
         args.repeat_input,
     ) {
-        eprintln!("Error: {}", e);
-        std::process::exit(1);
+        Ok(prompt) => {
+            let toml_string = toml::to_string(&prompt).expect("Failed to serialize prompt");
+            let mut file = fs::File::create(config::conversation_file_path())
+                .expect("Failed to the conversation save file");
+            file.write_all(toml_string.as_bytes())
+                .expect("Failed to write to file");
+        }
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            std::process::exit(1);
+        }
     }
 }

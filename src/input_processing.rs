@@ -1,7 +1,7 @@
 use log::debug;
 use std::io::{self, Read, Result, Write};
 
-use crate::config::{get_api_config, Prompt, PLACEHOLDER_TOKEN};
+use crate::config::{get_api_config, Message, Prompt, PLACEHOLDER_TOKEN};
 use crate::request::{make_authenticated_request, OpenAiResponse};
 
 // [tmp] mostly template to write tests
@@ -41,7 +41,7 @@ pub fn process_input_with_request<R: Read, W: Write>(
     input_string: Option<String>,
     output: &mut W,
     repeat_input: bool,
-) -> Result<()> {
+) -> Result<Prompt> {
     let mut input = match input_string {
         Some(input_string) => input_string,
         None => {
@@ -54,7 +54,7 @@ pub fn process_input_with_request<R: Read, W: Write>(
 
     // nothing to do if no input
     if input.is_empty() {
-        return Ok(());
+        return Ok(prompt);
     }
 
     // insert the input in the messages with placeholders
@@ -65,7 +65,7 @@ pub fn process_input_with_request<R: Read, W: Write>(
     let api_config = get_api_config(&prompt.api.to_string());
 
     // make the request
-    let response: OpenAiResponse = make_authenticated_request(api_config, prompt)
+    let response: OpenAiResponse = make_authenticated_request(api_config, &prompt)
         .map_err(|e| match e {
             ureq::Error::Status(status, response) => {
                 let body = match response.into_string() {
@@ -89,13 +89,16 @@ pub fn process_input_with_request<R: Read, W: Write>(
     let response_text = response.choices.first().unwrap().message.content.as_str();
     debug!("{}", &response_text);
 
+    prompt.messages.push(Message::assistant(&response_text));
+
     if repeat_input {
         input.push('\n');
         output.write_all(input.as_bytes())?;
     }
+
     output.write_all(response_text.as_bytes())?;
 
-    Ok(())
+    Ok(prompt)
 }
 
 #[cfg(test)]
