@@ -127,20 +127,11 @@ A file named package,
 Holds the keys of a software's age.
 With a name, version, and edition too,
 The content speaks of something new.
-
-Dependencies lie within,
-With toml, clap, ureq, and serde in,
-The stars denote any version will do,
-As long as the features are included, too.
-
-A short poem of the file's content,
-A glimpse into the software's intent.
-With these keys and dependencies,
-A program is born, fulfilling needs.
+[...]
 ```
 
 ```
-sc -f Cargo.toml -p "translate the following file in json" | save Cargo.json
+sc -f Cargo.toml -p "translate the following file in json" >> save Cargo.json
 ```
 
 ```
@@ -158,17 +149,6 @@ sc write_tests -f my_file.py > test.py
 ```
 
 see example in the [configuration section](#Configuration).
-
-Skipping input to talk directly to the model (but mind the default prompt)
-
-```
-sc empty -i "Do you like trains?"
-
-So if you wonder, do I like the trains of steel and might,
-My answer lies in how they're kin to code that runs so right.
-Frameworks and libraries, like stations, stand so proud
-And programmers, conductors, who make the engines loud.
-```
 
 ### Integrating with editors
 
@@ -190,14 +170,30 @@ Start by selecting some text, then press `:`. You can then pipe the selection co
 will **replace** the current selection with the same text transformed by the language model.
 
 ```
-:'<,'>!sc -p "implement the traits FromStr and ToString for this struct" -r
-```
-
-```
-:'<,'>!sc write_test -r
+:'<,'>!sc -r write_test
 ```
 
 will **append** at the end of the current selection the result of the language model.
+
+#### Example Workflow
+
+select a struct
+
+```
+:'<,'>!sc -r -p "implement the traits FromStr and ToString for this struct"
+```
+
+select the generated impl block
+
+```
+:'<,'>!sc -e -i "can you make it more concise?"
+```
+
+put the cursor at the bottom of the file
+
+```
+:'<,'>!sc -e -p "now write tests for it knowing it's used like this" -f src/main.rs
+```
 
 ...
 
