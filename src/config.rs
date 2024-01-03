@@ -220,6 +220,7 @@ fn prompt_user_for_config_file_creation(file_path: impl Debug) {
 }
 
 pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
+    let mut config_was_generated = false;
     if !api_keys_path().exists() {
         let openai_api_key = if interactive {
             prompt_user_for_config_file_creation(api_keys_path());
@@ -247,6 +248,7 @@ pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
 
         let mut config_file = fs::File::create(api_keys_path())?;
         config_file.write_all(api_config_str.as_bytes())?;
+        config_was_generated = true;
     }
 
     if !prompts_path().exists() {
@@ -264,6 +266,11 @@ pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
 
         let mut prompts_file = fs::File::create(prompts_path())?;
         prompts_file.write_all(prompt_str.as_bytes())?;
+        config_was_generated = true;
+    }
+
+    if interactive & config_was_generated {
+        std::process::exit(0);
     }
 
     Ok(())
