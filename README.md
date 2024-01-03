@@ -23,7 +23,8 @@ What makes it special:
 - a set of partial prompts making the model play nice as a cli tool;
 - good io handling to insert user input in said prompts and use the result in cli-based workflows.
 
-Currently supports **ChatGPT** and **Mistral AI**.
+Currently supports **ChatGPT** and **Mistral AI** but built to work with multiple ones seemlessly.
+
 
 ![](assets/workflow.gif)
 
@@ -43,10 +44,11 @@ With an **up to date** [rust and cargo](https://www.rust-lang.org/tools/install)
 cargo install smartcat
 ```
 
-(the binary is named `sc`)
+run this command again to update `smartcat`.
 
 Or download directly the binary compiled for your platform from the [release page](https://github.com/efugier/smartcat/releases).
 
+(the binary is named `sc`)
 
 ---
 
@@ -91,8 +93,6 @@ Options:
   -V, --version
           Print version
 ```
-
-Currently only supporting openai and chatgpt but build to work with multiple ones seemlessly if competitors emerge.
 
 You can use it to **accomplish tasks in the CLI** but **also in your editors** (if they are good unix citizens, i.e. work with shell commands and text streams) to complete, refactor, write tests... anything!
 
