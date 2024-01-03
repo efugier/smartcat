@@ -19,9 +19,11 @@
 
 Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow power users to make the most out of llms.
 
-It relies on good io handling to expand great prompts making the model play nice as a cli tool with user input.
+What makes it special:
+- a set of partial prompts making the model play nice as a cli tool;
+- good io handling to insert user input in said prompts and use the result in cli-based workflows.
 
-Currently supports **ChatGPT** and **Mistral**.
+Currently supports **ChatGPT** and **Mistral AI**.
 
 ![](assets/workflow.gif)
 
