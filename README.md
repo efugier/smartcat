@@ -19,6 +19,10 @@
 
 Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow power users to make the most out of llms.
 
+It relies on good io handling to expand great prompts making the model play nice as a cli tool with user input.
+
+Currently supports **ChatGPT** and **Mistral**.
+
 ![](assets/workflow.gif)
 
 - [Installation](#installation-)
@@ -78,7 +82,7 @@ Options:
   -t, --temparature <TEMPARATURE>
           temperature between 0 and 2, higher means answer further from the average
       --api <API>
-          overrides which api to hit [possible values: openai, another-api-for-tests]
+          overrides which api to hit [possible values: openai, mistral]
   -m, --model <MODEL>
           overrides which model (of the api) to use
   -h, --help
@@ -95,28 +99,29 @@ The key to make this work seamlessly is a good default prompt that tells the mod
 
 ## A few examples to get started 🐈‍⬛
 
-Ask anything without leaving the confort of your terminal
+Ask anything without leaving the confort of your terminal, use the `-i` flag so that it doesn't wait for piped input.
 
 ```
 sc -i "sed command to remove trailaing whitespaces at the end of all non-markdown files?"
 > sed -i '' 's/[ \t]*$//' *.* !(*.md)
 ```
 
-continue the last conversation
+continue the last conversation use `-e`
 
 ```
 sc -e -i "and using awk?"
 awk '{ sub(/[ \t]+$/, ""); print }' file.ext > file.tmp && mv file.tmp file.ext
 ```
 
-A new conversation will start and erase the previous one if the `-e` flag is not there
-
 ```
 sc -i "shell script to migrate a repository from pipenv to poetry" >> poetry_mirgation.sh
 ```
 
+get another opinion
 
-use the `-i` so that it doesn't wait for piped input.
+```
+sc -i "shell script to migrate a repository from pipenv to poetry" --api mistral >> poetry_mirgation_mistral.sh
+```
 
 ### Manipulate file and text streams
 
@@ -175,6 +180,15 @@ will **replace** the current selection with the same text transformed by the lan
 
 will **append** at the end of the current selection the result of the language model.
 
+#### Helix and Kakoune
+
+Same concept, different shortcut, simply press the pipe key to redirect the selection to `smarcat`.
+
+```
+pipe:sc write_test -r
+```
+With some remapping you may have your most reccurrent action attached to few keystrokes e.g. `<leader>wt`!
+
 #### Example Workflow
 
 select a struct
@@ -197,17 +211,8 @@ put the cursor at the bottom of the file
 
 ...
 
-With some remapping you may have your most reccurrent action attached to few keystrokes e.g. `<leader>wt`!
 
-#### Helix and Kakoune
-
-Same concept, different shortcut, simply press the pipe key to redirect the selection to `smarcat`.
-
-```
-pipe:sc write_test -r
-```
-
-These are only some ideas to get started, go nuts!
+These are only some ideas to get started, experiment for yourself!
 
 # Configuration
 
@@ -225,9 +230,15 @@ stores the latest chat if you need to continue it
 `.api_configs.toml`
 
 ```toml
-[openai]  # each api has their own config section with api and url
-url = "https://api.openai.com/v1/chat/completions"
+[openai]  # each supported api has their own config section with api and url
 api_key = "<your_api_key>"
+default_model = "gpt-4"
+url = "https://api.openai.com/v1/chat/completions"
+
+[mistral]
+api_key = "<your_api_key>"
+default_model = "mistral-medium"
+url = "https://api.mistral.ai/v1/chat/completions"
 ```
 
 `prompts.toml`
@@ -235,7 +246,7 @@ api_key = "<your_api_key>"
 ```toml
 [default]  # a prompt is a section
 api = "openai"  # must refer to an entry in the `.api_configs.toml` file
-model = "gpt-4-1106-preview"
+model = "gpt-4-1106-preview"  # each prompt may define its own model
 
 [[default.messages]]  # then you can list messages
 role = "system"
@@ -252,12 +263,10 @@ Now let's make something great together!
 
 [empty]  # always nice to have an empty prompt available
 api = "openai"
-model = "gpt-4-1106-preview"
 messages = []
 
 [write_tests]
 api = "openai"
-model = "gpt-4-1106-preview"
 
 [[write_tests.messages]]
 role = "system"

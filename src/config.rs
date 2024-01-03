@@ -19,6 +19,7 @@ const CONVERSATION_FILE: &str = "conversation.toml";
 #[serde(rename_all = "lowercase")]
 pub enum Api {
     Openai,
+    Mistral,
     AnotherApiForTests,
 }
 
@@ -28,6 +29,7 @@ impl FromStr for Api {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "openai" => Ok(Api::Openai),
+            "mistral" => Ok(Api::Mistral),
             _ => Err(()),
         }
     }
@@ -37,6 +39,7 @@ impl ToString for Api {
     fn to_string(&self) -> String {
         match self {
             Api::Openai => "openai".to_string(),
+            Api::Mistral => "mistral".to_string(),
             v => panic!(
                 "{:?} is not implemented, use one among {:?}",
                 v,
@@ -50,6 +53,7 @@ impl ToString for Api {
 pub struct ApiConfig {
     pub api_key: String,
     pub url: String,
+    pub default_model: Option<String>,
 }
 
 impl Default for ApiConfig {
@@ -58,6 +62,7 @@ impl Default for ApiConfig {
         ApiConfig {
             api_key: String::from("<insert_api_key_here>"),
             url: String::from("https://api.openai.com/v1/chat/completions"),
+            default_model: None,
         }
     }
 }
@@ -67,6 +72,7 @@ impl ApiConfig {
         ApiConfig {
             api_key,
             url: String::from("https://api.openai.com/v1/chat/completions"),
+            default_model: None,
         }
     }
 }
@@ -74,7 +80,7 @@ impl ApiConfig {
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 pub struct Prompt {
     pub api: Api,
-    pub model: String,
+    pub model: Option<String>,
     pub messages: Vec<Message>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub temperature: Option<f32>,
@@ -98,7 +104,7 @@ impl Default for Prompt {
         ];
         Prompt {
             api: Api::Openai,
-            model: String::from("gpt-4"),
+            model: Some(String::from("gpt-4")),
             temperature: None,
             messages,
         }
@@ -107,12 +113,12 @@ impl Default for Prompt {
 
 impl Prompt {
     pub fn empty() -> Self {
-        let messages = vec![];
+        let default_prompt = Prompt::default();
         Prompt {
-            api: Api::Openai,
-            model: Prompt::default().model,
+            api: default_prompt.api,
+            model: default_prompt.model,
             temperature: None,
-            messages,
+            messages: vec![],
         }
     }
 }

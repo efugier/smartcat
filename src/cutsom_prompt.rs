@@ -18,7 +18,7 @@ pub fn customize_prompt(
     if let Some(api) = api {
         prompt.api = api.to_owned();
     }
-    if let Some(model) = model {
+    if model.is_some() {
         prompt.model = model.to_owned();
     }
 
@@ -146,7 +146,7 @@ mod tests {
         );
 
         let default_prompt = Prompt::empty();
-        assert_eq!(customized.model, model);
+        assert_eq!(customized.model, Some(model));
         assert_eq!(customized.api, default_prompt.api);
     }
 
@@ -360,7 +360,7 @@ mod tests {
         );
 
         assert_eq!(customized.api, api);
-        assert_eq!(customized.model, model);
+        assert_eq!(customized.model, Some(model));
         assert_eq!(customized.temperature, temperature);
         assert!(customized
             .messages

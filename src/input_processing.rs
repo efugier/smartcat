@@ -83,7 +83,7 @@ pub fn process_input_with_request<R: Read, W: Write>(
     let response_text = response.choices.first().unwrap().message.content.as_str();
     debug!("{}", &response_text);
 
-    prompt.messages.push(Message::assistant(&response_text));
+    prompt.messages.push(Message::assistant(response_text));
 
     if repeat_input {
         input.push('\n');
