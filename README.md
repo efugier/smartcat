@@ -37,7 +37,7 @@ Currently supports **ChatGPT** and **Mistral AI**.
 
 ## Installation
 
-With [rust and cargo](https://www.rust-lang.org/tools/install) installed and setup:
+With an **up to date** [rust and cargo](https://www.rust-lang.org/tools/install) setup (you might consider running `rustup update`):
 
 ```
 cargo install smartcat
@@ -103,7 +103,7 @@ The key to make this work seamlessly is a good default prompt that tells the mod
 Ask anything without leaving the confort of your terminal! Use the `-i` flag so that it doesn't wait for piped input.
 
 ```
-sc -i "write an overview of this prject's usage" -c "src/**/*.rs"
+sc -i "write an overview of this project's usage" -c "src/**/*.rs"
 ```
 > _This project is a smart version of the Unix cat command. It takes text and a prompt, then outputs text according to specifications. The output is clean and ready for further processing by other programs, making it useful for precise text control in toolchains or workflow automation._
 
