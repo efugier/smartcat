@@ -59,15 +59,27 @@ pub struct ApiConfig {
 impl Default for ApiConfig {
     // default to openai
     fn default() -> Self {
-        ApiConfig {
-            api_key: String::from("<insert_api_key_here>"),
-            url: String::from("https://api.openai.com/v1/chat/completions"),
-            default_model: None,
-        }
+        ApiConfig::openai()
     }
 }
 
 impl ApiConfig {
+    fn openai() -> Self {
+        ApiConfig {
+            api_key: String::from("<insert_api_key_here>"),
+            url: String::from("https://api.openai.com/v1/chat/completions"),
+            default_model: Some(String::from("gpt-4")),
+        }
+    }
+
+    fn mistral() -> Self {
+        ApiConfig {
+            api_key: String::from("<insert_api_key_here>"),
+            url: String::from("https://api.openai.com/v1/chat/completions"),
+            default_model: Some(String::from("gpt-4")),
+        }
+    }
+
     fn default_with_api_key(api_key: String) -> Self {
         ApiConfig {
             api_key,
@@ -104,7 +116,7 @@ impl Default for Prompt {
         ];
         Prompt {
             api: Api::Openai,
-            model: Some(String::from("gpt-4")),
+            model: None,
             temperature: None,
             messages,
         }
@@ -226,6 +238,7 @@ pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
             Prompt::default().api.to_string(),
             ApiConfig::default_with_api_key(openai_api_key),
         );
+        api_config.insert(Api::Mistral.to_string(), ApiConfig::mistral());
 
         let api_config_str = toml::to_string_pretty(&api_config)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
@@ -414,6 +427,10 @@ mod tests {
             Some(&ApiConfig::default_with_api_key(
                 "<insert_api_key_here>".to_string()
             ))
+        );
+        assert_eq!(
+            api_config.get(&Api::Mistral.to_string()),
+            Some(&ApiConfig::mistral())
         );
 
         let default_prompt = Prompt::default();
