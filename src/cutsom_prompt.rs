@@ -1,3 +1,4 @@
+use glob::glob;
 use log::debug;
 use std::fs;
 
@@ -44,9 +45,22 @@ pub fn customize_prompt(
         }
     };
     maybe_insert_message(system_message, None);
-    // context can be a file
-    let context = context.map(|ctx| fs::read_to_string(&ctx).unwrap_or(ctx));
-    maybe_insert_message(context, Some("context:\n".to_string()));
+
+    // insert matched file's content as context in a system message
+    let context = context.and_then(|glob_pattern| {
+        let files_content = glob(&glob_pattern)
+            .expect("Failed to read glob pattern")
+            .filter_map(Result::ok)
+            .filter_map(|path| {
+                fs::read_to_string(&path)
+                    .ok()
+                    .map(|content| format!("{}:\n```\n{}\n```\n", path.display(), content))
+            })
+            .collect::<String>();
+
+        (!files_content.is_empty()).then_some(files_content)
+    });
+    maybe_insert_message(context, Some("files content for context:\n\n".to_owned()));
 
     // if prompt customization was provided, add it in a new message
     if let Some(command_text) = custom_prompt {
@@ -251,30 +265,11 @@ mod tests {
 
         assert_eq!(
             customized.messages[0].content,
-            format!("context:\n{}", context_content)
-        );
-        assert_eq!(customized.messages[0].role, "system");
-    }
-
-    #[test]
-    fn test_customize_prompt_with_context_string() {
-        let prompt = Prompt::empty();
-        let context_content = "hello there";
-
-        let customized = customize_prompt(
-            prompt,
-            &None,
-            &None,
-            &None,
-            &None,
-            None,
-            Some(context_content.to_string()),
-            None,
-        );
-
-        assert_eq!(
-            customized.messages[0].content,
-            format!("context:\n{}", context_content)
+            format!(
+                "files content for context:\n\n{}:\n```\n{}\n```\n",
+                context_file.path().display(),
+                context_content
+            )
         );
         assert_eq!(customized.messages[0].role, "system");
     }
@@ -370,7 +365,11 @@ mod tests {
         assert_eq!(customized.messages[0].role, "system");
         assert_eq!(
             customized.messages[1].content,
-            format!("context:\n{}", context_content)
+            format!(
+                "files content for context:\n\n{}:\n```\n{}\n```\n",
+                context_file.path().display(),
+                context_content
+            )
         );
         assert_eq!(customized.messages[1].role, "system");
         assert!(

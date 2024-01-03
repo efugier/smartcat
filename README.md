@@ -64,27 +64,26 @@ Arguments:
   [CONFIG_PROMPT]  which prompt in the config to fetch [default: default]
 
 Options:
+  -i, --input <INPUT>
+          skip reading from stdin and use that value instead
+  -p, --custom-prompt <CUSTOM_PROMPT>
+          custom prompt to append before the input
   -e, --extend-conversation
           whether to extend the previous conversation or start a new one
   -r, --repeat-input
           whether to repeat the input before the output, useful to extend instead of replacing
-  -p, --custom-prompt <CUSTOM_PROMPT>
-          custom prompt to append before the input
+  -c, --context <CONTEXT>
+          glob pattern to given the matched files' content as context
   -s, --system-message <SYSTEM_MESSAGE>
           system "config"  message to send after the prompt and before the first user message
-  -c, --context <CONTEXT>
-          context string (will be file content if it resolves to an existing file's path) to
-          include after the system message and before first user message
   -a, --after-input <AFTER_INPUT>
           suffix to add after the input and the custom prompt
   -f, --file <FILE>
           skip reading from the input and read this file instead
-  -i, --input <INPUT>
-          skip reading from input and use that value instead
-  -t, --temparature <TEMPARATURE>
+  -t, --temperature <TEMPERATURE>
           temperature between 0 and 2, higher means answer further from the average
       --api <API>
-          overrides which api to hit [possible values: openai, mistral]
+          overrides which api to hit [possible values: openai, mistral, another-api-for-tests]
   -m, --model <MODEL>
           overrides which model (of the api) to use
   -h, --help
@@ -101,11 +100,16 @@ The key to make this work seamlessly is a good default prompt that tells the mod
 
 ## A few examples to get started 🐈‍⬛
 
-Ask anything without leaving the confort of your terminal, use the `-i` flag so that it doesn't wait for piped input.
+Ask anything without leaving the confort of your terminal! Use the `-i` flag so that it doesn't wait for piped input.
+
+```
+sc -i "write an overview of this prject's usage" -c "src/**/*.rs"
+```
+> _This project is a smart version of the Unix cat command. It takes text and a prompt, then outputs text according to specifications. The output is clean and ready for further processing by other programs, making it useful for precise text control in toolchains or workflow automation._
 
 ```
 sc -i "sed command to remove trailaing whitespaces at the end of all non-markdown files?"
-> sed -i '' 's/[ \t]*$//' *.* !(*.md)
+sed -i '' 's/[ \t]*$//' *.* !(*.md)
 ```
 
 continue the last conversation use `-e`

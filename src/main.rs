@@ -20,34 +20,33 @@ mod config;
     long_about = None
 )]
 struct Cli {
-    /// whether to extend the previous conversation or start a new one
-    #[arg(short, long)]
-    extend_conversation: bool,
-    /// which prompt in the config to fetch
     #[arg(default_value_t = String::from("default"))]
+    /// which prompt in the config to fetch
     config_prompt: String,
-    /// whether to repeat the input before the output, useful to extend instead of replacing
+    /// skip reading from stdin and use that value instead
     #[arg(short, long)]
-    repeat_input: bool,
+    input: Option<String>,
     /// custom prompt to append before the input
     #[arg(short = 'p', long)]
     custom_prompt: Option<String>,
+    /// whether to extend the previous conversation or start a new one
+    #[arg(short, long)]
+    extend_conversation: bool,
+    /// whether to repeat the input before the output, useful to extend instead of replacing
+    #[arg(short, long)]
+    repeat_input: bool,
+    /// glob pattern to given the matched files' content as context
+    #[arg(short, long)]
+    context: Option<String>,
     /// system "config"  message to send after the prompt and before the first user message
     #[arg(short, long)]
     system_message: Option<String>,
-    /// context string (will be file content if it resolves to an existing file's path) to
-    /// include after the system message and before first user message
-    #[arg(short, long)]
-    context: Option<String>,
     /// suffix to add after the input and the custom prompt
     #[arg(short, long)]
     after_input: Option<String>,
     /// skip reading from the input and read this file instead
     #[arg(short, long)]
     file: Option<String>,
-    /// skip reading from input and use that value instead
-    #[arg(short, long)]
-    input: Option<String>,
     /// temperature between 0 and 2, higher means answer further from the average
     #[arg(short, long)]
     temperature: Option<f32>,
