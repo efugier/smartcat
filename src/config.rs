@@ -51,7 +51,8 @@ impl ToString for Api {
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 pub struct ApiConfig {
-    pub api_key: String,
+    pub api_key_command: Option<String>,
+    pub api_key: Option<String>,
     pub url: String,
     pub default_model: Option<String>,
 }
@@ -64,9 +65,30 @@ impl Default for ApiConfig {
 }
 
 impl ApiConfig {
+    pub fn get_api_key(&self) -> String {
+        self.api_key
+            .clone()
+            .or_else(|| {
+                self.api_key_command.clone().map(|command| {
+                    let output =
+                        std::process::Command::new(command.split_whitespace().next().unwrap())
+                            .args(command.split_whitespace().skip(1))
+                            .output()
+                            .expect("Failed to run the api command")
+                            .stdout;
+                    String::from_utf8(output)
+                        .expect("Invalid UTF-8 from command")
+                        .trim()
+                        .to_string()
+                })
+            })
+            .expect("No api_key found.")
+    }
+
     fn openai() -> Self {
         ApiConfig {
-            api_key: String::from("<insert_api_key_here>"),
+            api_key_command: None,
+            api_key: None,
             url: String::from("https://api.openai.com/v1/chat/completions"),
             default_model: Some(String::from("gpt-4")),
         }
@@ -74,17 +96,19 @@ impl ApiConfig {
 
     fn mistral() -> Self {
         ApiConfig {
-            api_key: String::from("<insert_api_key_here>"),
-            url: String::from("https://api.openai.com/v1/chat/completions"),
-            default_model: Some(String::from("gpt-4")),
+            api_key_command: None,
+            api_key: None,
+            url: String::from("https://api.mistral.ai/v1/chat/completions"),
+            default_model: Some(String::from("mistral-medium")),
         }
     }
 
-    fn default_with_api_key(api_key: String) -> Self {
+    fn default_with_api_key(api_key: Option<String>) -> Self {
         ApiConfig {
+            api_key_command: None,
             api_key,
             url: String::from("https://api.openai.com/v1/chat/completions"),
-            default_model: None,
+            default_model: Some(String::from("gpt-4")),
         }
     }
 }
@@ -210,7 +234,7 @@ fn read_user_input() -> String {
 
 fn prompt_user_for_config_file_creation(file_path: impl Debug) {
     println!(
-        "Api config file not found at {:?}, do you wish to generate one? [y/n]",
+        "Config file not found at {:?}, do you wish to generate one? [y/n]",
         file_path
     );
     if read_user_input().to_lowercase() != "y" {
@@ -226,13 +250,23 @@ pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
             prompt_user_for_config_file_creation(api_keys_path());
             println!(
                 "Please paste your openai API key, it can be found at\n\
-                    https://platform.openai.com/api-keys\n\
-                    Press enter to skip (then edit the file at {:?}).",
-                api_keys_path()
+                https://platform.openai.com/api-keys\n\
+                Press [ENTER] to skip"
             );
-            read_user_input()
+            let input = read_user_input().trim().to_string();
+            if input.trim().is_empty() {
+                println!(
+                    "Please edit the file at {:?} more \
+                    config options are available this way. See\
+                    https://github.com/efugier/smartcat#configuration",
+                    api_keys_path()
+                );
+                None
+            } else {
+                Some(input)
+            }
         } else {
-            "<insert_api_key_here>".to_string()
+            None
         };
         let mut api_config = HashMap::new();
         api_config.insert(
@@ -247,6 +281,11 @@ pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
         std::fs::create_dir_all(api_keys_path().parent().unwrap())?;
 
         let mut config_file = fs::File::create(api_keys_path())?;
+        let doc = "\
+        # Api config files, use `api_key` or `api_key_command` fields\n\
+        # to set the api key for each api\n\
+        # more details at https://github.com/efugier/smartcat#configuration\n\n";
+        config_file.write_all(doc.as_bytes())?;
         config_file.write_all(api_config_str.as_bytes())?;
         config_was_generated = true;
     }
@@ -431,9 +470,7 @@ mod tests {
         // Check if the content matches the default values
         assert_eq!(
             api_config.get(&Prompt::default().api.to_string()),
-            Some(&ApiConfig::default_with_api_key(
-                "<insert_api_key_here>".to_string()
-            ))
+            Some(&ApiConfig::default())
         );
         assert_eq!(
             api_config.get(&Api::Mistral.to_string()),
