@@ -245,10 +245,21 @@ fn prompt_user_for_config_file_creation(file_path: impl Debug) {
 
 pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
     let mut config_was_generated = false;
+    let mut config_available = true;
+    if !prompts_path().exists() {
+        if interactive {
+            println!(
+                "Prompt config file not found at {:?}, generating one.\n...",
+                prompts_path()
+            );
+        }
+        generate_prompts_file()?
+    }
+
     if !api_keys_path().exists() {
         let openai_api_key = if interactive {
             println!(
-                "API config file not found at {:?}, generating one.",
+                "API config file not found at {:?}, generating one.\n...",
                 api_keys_path()
             );
             println!(
@@ -260,10 +271,11 @@ pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
             if input.trim().is_empty() {
                 println!(
                     "Please edit the file at {:?} more \
-                    config options are available this way. See\
+                    config options are available this way. See\n\
                     https://github.com/efugier/smartcat#configuration",
                     api_keys_path()
                 );
+                config_available = false;
                 None
             } else {
                 Some(input)
@@ -271,53 +283,64 @@ pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
         } else {
             None
         };
-        let mut api_config = HashMap::new();
-        api_config.insert(
-            Prompt::default().api.to_string(),
-            ApiConfig::default_with_api_key(openai_api_key),
-        );
-        api_config.insert(Api::Mistral.to_string(), ApiConfig::mistral());
-
-        let api_config_str = toml::to_string_pretty(&api_config)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-
-        std::fs::create_dir_all(api_keys_path().parent().unwrap())?;
-
-        let mut config_file = fs::File::create(api_keys_path())?;
-        let doc = "\
-        # Api config files, use `api_key` or `api_key_command` fields\n\
-        # to set the api key for each api\n\
-        # more details at https://github.com/efugier/smartcat#configuration\n\n";
-        config_file.write_all(doc.as_bytes())?;
-        config_file.write_all(api_config_str.as_bytes())?;
         config_was_generated = true;
+        generate_api_keys_file(openai_api_key)?;
     }
 
-    if !prompts_path().exists() {
-        if interactive {
-            println!(
-                "Prompt config file not found at {:?}, generating one.",
-                prompts_path()
-            );
-        }
-        let mut prompt_config = HashMap::new();
-        prompt_config.insert("default", Prompt::default());
-        prompt_config.insert("empty", Prompt::empty());
-
-        let prompt_str = toml::to_string_pretty(&prompt_config)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-
-        std::fs::create_dir_all(prompts_path().parent().unwrap())?;
-
-        let mut prompts_file = fs::File::create(prompts_path())?;
-        prompts_file.write_all(prompt_str.as_bytes())?;
-        config_was_generated = true;
-    }
-
-    if interactive & config_was_generated {
+    if interactive & config_was_generated & config_available {
+        println!("All set!");
+        println!("========");
+    } else if interactive & !config_available {
+        println!("Come back when you've set your api keys!");
+        println!("========");
         std::process::exit(0);
     }
 
+    Ok(())
+}
+
+pub fn generate_api_keys_file(api_key: Option<String>) -> std::io::Result<()> {
+    let mut api_config = HashMap::new();
+    api_config.insert(
+        Prompt::default().api.to_string(),
+        ApiConfig::default_with_api_key(api_key),
+    );
+    api_config.insert(Api::Mistral.to_string(), ApiConfig::mistral());
+
+    std::fs::create_dir_all(api_keys_path().parent().unwrap())?;
+
+    let mut config_file = fs::File::create(api_keys_path())?;
+
+    let doc = "\
+        # Api config files, use `api_key` or `api_key_command` fields\n\
+        # to set the api key for each api\n\
+        # more details at https://github.com/efugier/smartcat#configuration\n\n";
+    config_file.write_all(doc.as_bytes())?;
+
+    let api_config_str = toml::to_string_pretty(&api_config)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+    config_file.write_all(api_config_str.as_bytes())?;
+
+    Ok(())
+}
+
+pub fn generate_prompts_file() -> std::io::Result<()> {
+    let mut prompt_config = HashMap::new();
+    prompt_config.insert("default", Prompt::default());
+    prompt_config.insert("empty", Prompt::empty());
+
+    std::fs::create_dir_all(prompts_path().parent().unwrap())?;
+
+    let mut prompts_file = fs::File::create(prompts_path())?;
+
+    let doc = "\
+        # Prompt config files\n\
+        # more details and examples at https://github.com/efugier/smartcat#configuration\n\n";
+    prompts_file.write_all(doc.as_bytes())?;
+
+    let prompt_str = toml::to_string_pretty(&prompt_config)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+    prompts_file.write_all(prompt_str.as_bytes())?;
     Ok(())
 }
 
