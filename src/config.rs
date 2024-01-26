@@ -247,7 +247,10 @@ pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
     let mut config_was_generated = false;
     if !api_keys_path().exists() {
         let openai_api_key = if interactive {
-            prompt_user_for_config_file_creation(api_keys_path());
+            println!(
+                "API config file not found at {:?}, generating one.",
+                api_keys_path()
+            );
             println!(
                 "Please paste your openai API key, it can be found at\n\
                 https://platform.openai.com/api-keys\n\
@@ -292,7 +295,10 @@ pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
 
     if !prompts_path().exists() {
         if interactive {
-            prompt_user_for_config_file_creation(prompts_path());
+            println!(
+                "Prompt config file not found at {:?}, generating one.",
+                prompts_path()
+            );
         }
         let mut prompt_config = HashMap::new();
         prompt_config.insert("default", Prompt::default());
