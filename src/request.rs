@@ -68,12 +68,15 @@ pub fn make_authenticated_request(
     let mut prompt = prompt.clone();
 
     if prompt.model.is_none() {
-        prompt.model = api_config.default_model
+        prompt.model = api_config.default_model.clone()
     }
 
     let request = ureq::post(&api_config.url)
         .set("Content-Type", "application/json")
-        .set("Authorization", &format!("Bearer {}", api_config.api_key));
+        .set(
+            "Authorization",
+            &format!("Bearer {}", &api_config.get_api_key()),
+        );
     match prompt.api {
         Api::Openai => request.send_json(OpenAiPrompt::from(prompt)),
         Api::Mistral => request.send_json(OpenAiPrompt::from(prompt)),

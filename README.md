@@ -33,7 +33,7 @@ Currently supports **ChatGPT** and **Mistral AI** but built to work with multipl
 - [A few examples to get started 🐈‍⬛](#a-few-examples-to-get-started-)
   - [Manipulate file and text streams](#manipulate-file-and-text-streams)
   - [Integrating with editors](#integrating-with-editors)
-- [Configuration](#configuration)
+- [Configuration](#configuration) ← please read this carefully
 - [Developping](#developping)
 
 ## Installation
@@ -242,7 +242,7 @@ default_model = "gpt-4"
 url = "https://api.openai.com/v1/chat/completions"
 
 [mistral]
-api_key = "<your_api_key>"
+api_key_command = "pass mistral/api_key"  # you can use a command to grab the key
 default_model = "mistral-medium"
 url = "https://api.mistral.ai/v1/chat/completions"
 ```
