@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{Args, Parser};
 use log::debug;
 use std::fs;
 use std::io;
@@ -26,36 +26,43 @@ struct Cli {
     /// skip reading from stdin and use that value instead
     #[arg(short, long)]
     input: Option<String>,
-    /// custom prompt to append before the input
-    #[arg(short = 'p', long)]
-    custom_prompt: Option<String>,
     /// whether to extend the previous conversation or start a new one
     #[arg(short, long)]
     extend_conversation: bool,
     /// whether to repeat the input before the output, useful to extend instead of replacing
     #[arg(short, long)]
     repeat_input: bool,
-    /// glob pattern to given the matched files' content as context
-    #[arg(short, long)]
-    context: Option<String>,
-    /// system "config"  message to send after the prompt and before the first user message
-    #[arg(short, long)]
-    system_message: Option<String>,
-    /// suffix to add after the input and the custom prompt
-    #[arg(short, long)]
-    after_input: Option<String>,
     /// skip reading from the input and read this file instead
     #[arg(short, long)]
     file: Option<String>,
-    /// temperature between 0 and 2, higher means answer further from the average
-    #[arg(short, long)]
-    temperature: Option<f32>,
+    #[command(flatten)]
+    prompt_params: PromptParams,
+}
+
+#[derive(Debug, Default, Args)]
+#[group(id = "prompt_params")]
+struct PromptParams {
     /// overrides which api to hit
     #[arg(long)]
     api: Option<config::Api>,
     /// overrides which model (of the api) to use
     #[arg(short, long)]
     model: Option<String>,
+    /// custom prompt to append before the input
+    #[arg(short = 'p', long)]
+    custom_prompt: Option<String>,
+    /// suffix to add after the input and the custom prompt
+    #[arg(short, long)]
+    after_input: Option<String>,
+    /// system "config"  message to send after the prompt and before the first user message
+    #[arg(short, long)]
+    system_message: Option<String>,
+    /// glob pattern to given the matched files' content as context
+    #[arg(short, long)]
+    context: Option<String>,
+    /// temperature between 0 and 2, higher means answer further from the average
+    #[arg(short, long)]
+    temperature: Option<f32>,
 }
 
 fn main() {
@@ -112,16 +119,7 @@ fn main() {
             .expect(&prompt_not_found_error)
     };
 
-    let prompt = cutsom_prompt::customize_prompt(
-        prompt,
-        &args.api,
-        &args.model,
-        &args.custom_prompt,
-        &args.after_input,
-        args.system_message,
-        args.context,
-        args.temperature,
-    );
+    let prompt = cutsom_prompt::customize_prompt(prompt, &args.prompt_params);
 
     debug!("{:?}", prompt);
 
