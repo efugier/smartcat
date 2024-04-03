@@ -209,7 +209,7 @@ select the generated impl block
 :'<,'>!sc -e -i "can you make it more concise?"
 ```
 
-put the cursor at the bottom of the file
+put the cursor at the bottom of the file and give example usage as input
 
 ```
 :'<,'>!sc -e -p "now write tests for it knowing it's used like this" -f src/main.rs
@@ -238,13 +238,18 @@ stores the latest chat if you need to continue it
 ```toml
 [openai]  # each supported api has their own config section with api and url
 api_key = "<your_api_key>"
-default_model = "gpt-4"
+default_model = "gpt-4-turbo-preview"
 url = "https://api.openai.com/v1/chat/completions"
 
 [mistral]
 api_key_command = "pass mistral/api_key"  # you can use a command to grab the key
 default_model = "mistral-medium"
 url = "https://api.mistral.ai/v1/chat/completions"
+
+[anthropic]
+api_key = "<yet_another_api_key>"
+url = "https://api.anthropic.com/v1/messages"
+default_model = "claude-3-opus-20240229"
 ```
 
 `prompts.toml`
@@ -310,9 +315,4 @@ Smartcat has reached an acceptable feature set. The focus is now on upgrading th
 #### TODO
 
 - [ ] make it available on homebrew
-- [ ] refactor the prompt parameters into a struct
 
-#### Ideas:
-
-- interactive mode to have conversations and make the model iterate on the last answer (e.g. a flag `--start-conversation` to start and `--end-conversation` to end the current one, by default no conversation)
-- fetch more context from the codebase

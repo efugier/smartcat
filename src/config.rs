@@ -20,6 +20,7 @@ const CONVERSATION_FILE: &str = "conversation.toml";
 pub enum Api {
     Openai,
     Mistral,
+    Anthropic,
     AnotherApiForTests,
 }
 
@@ -30,6 +31,7 @@ impl FromStr for Api {
         match s.to_lowercase().as_str() {
             "openai" => Ok(Api::Openai),
             "mistral" => Ok(Api::Mistral),
+            "anthropic" => Ok(Api::Anthropic),
             _ => Err(()),
         }
     }
@@ -40,6 +42,7 @@ impl ToString for Api {
         match self {
             Api::Openai => "openai".to_string(),
             Api::Mistral => "mistral".to_string(),
+            Api::Anthropic => "anthropic".to_string(),
             v => panic!(
                 "{:?} is not implemented, use one among {:?}",
                 v,
@@ -103,6 +106,15 @@ impl ApiConfig {
         }
     }
 
+    fn anthropic() -> Self {
+        ApiConfig {
+            api_key_command: None,
+            api_key: None,
+            url: String::from("https://api.anthropic.com/v1/messages"),
+            default_model: Some(String::from("claude-3-opus-20240229")),
+        }
+    }
+
     fn default_with_api_key(api_key: Option<String>) -> Self {
         ApiConfig {
             api_key_command: None,
@@ -135,7 +147,7 @@ impl Default for Prompt {
                 Sometimes you will be asked to implement or extend some input code. Same thing goes here, write only what was asked because what you write will \
                 be directly added to the user's editor. \
                 Never ever write ``` around the code. \
-                Now let's make something great together! \
+                Make sure to keep the indentation and formatting. \
             ")
         ];
         Prompt {
@@ -301,11 +313,14 @@ pub fn ensure_config_files(interactive: bool) -> std::io::Result<()> {
 
 pub fn generate_api_keys_file(api_key: Option<String>) -> std::io::Result<()> {
     let mut api_config = HashMap::new();
+    api_config.insert(Api::Openai.to_string(), ApiConfig::openai());
+    api_config.insert(Api::Mistral.to_string(), ApiConfig::mistral());
+    api_config.insert(Api::Anthropic.to_string(), ApiConfig::anthropic());
+    // Default, should override one of the above
     api_config.insert(
         Prompt::default().api.to_string(),
         ApiConfig::default_with_api_key(api_key),
     );
-    api_config.insert(Api::Mistral.to_string(), ApiConfig::mistral());
 
     std::fs::create_dir_all(api_keys_path().parent().unwrap())?;
 
@@ -504,6 +519,11 @@ mod tests {
         assert_eq!(
             api_config.get(&Api::Mistral.to_string()),
             Some(&ApiConfig::mistral())
+        );
+
+        assert_eq!(
+            api_config.get(&Api::Anthropic.to_string()),
+            Some(&ApiConfig::anthropic())
         );
 
         let default_prompt = Prompt::default();

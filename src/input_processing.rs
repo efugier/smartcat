@@ -1,8 +1,8 @@
 use log::debug;
-use std::io::{self, Read, Result, Write};
+use std::io::{Read, Result, Write};
 
-use crate::config::{get_api_config, Message, Prompt, PLACEHOLDER_TOKEN};
-use crate::request::{make_authenticated_request, OpenAiResponse};
+use crate::config::{get_api_config, Prompt, PLACEHOLDER_TOKEN};
+use crate::request::make_api_request;
 
 // [tmp] mostly template to write tests
 pub fn chunk_process_input<R: Read, W: Write>(
@@ -65,32 +65,18 @@ pub fn process_input_with_request<R: Read, W: Write>(
     let api_config = get_api_config(&prompt.api.to_string());
 
     // make the request
-    let response: OpenAiResponse = make_authenticated_request(api_config, &prompt)
-        .map_err(|e| match e {
-            ureq::Error::Status(status, response) => {
-                let body = match response.into_string() {
-                    Ok(body) => body,
-                    Err(_) => "(non-UTF-8 response)".to_owned(),
-                };
-                io::Error::other(format!(
-                    "API call failed with status code {status} and body: {body}"
-                ))
-            }
-            ureq::Error::Transport(transport) => io::Error::other(transport),
-        })?
-        .into_json()?;
+    let response_message = make_api_request(api_config, &prompt)?;
 
-    let response_text = response.choices.first().unwrap().message.content.as_str();
-    debug!("{}", &response_text);
+    debug!("{}", &response_message.content);
 
-    prompt.messages.push(Message::assistant(response_text));
+    prompt.messages.push(response_message.clone());
 
     if repeat_input {
         input.push('\n');
         output.write_all(input.as_bytes())?;
     }
 
-    output.write_all(response_text.as_bytes())?;
+    output.write_all(response_message.content.as_bytes())?;
 
     Ok(prompt)
 }
