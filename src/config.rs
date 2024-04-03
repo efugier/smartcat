@@ -199,10 +199,12 @@ impl Message {
 }
 
 fn resolve_config_path() -> PathBuf {
-    match std::env::var(CUSTOM_CONFIG_ENV_VAR) {
-        Ok(p) => PathBuf::new().join(p),
-        Err(_) => PathBuf::new().join(env!("HOME")).join(DEFAULT_CONFIG_PATH),
-    }
+    std::env::var(CUSTOM_CONFIG_ENV_VAR)
+        .map(PathBuf::from)
+        .or_else(|_| {
+            std::env::var("HOME").map(|home| PathBuf::from(home).join(DEFAULT_CONFIG_PATH))
+        })
+        .unwrap_or_else(|_| panic!("Could not determine default config path. Set either ${CUSTOM_CONFIG_ENV_VAR} or $HOME"))
 }
 
 fn prompts_path() -> PathBuf {
