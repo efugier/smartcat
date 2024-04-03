@@ -1,39 +1,16 @@
-use crate::config::{Api, Message, Prompt};
+use crate::config::{Api, ApiConfig, Message, Prompt};
 use log::debug;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
-use crate::config::ApiConfig;
-
 #[derive(Debug, Deserialize)]
-pub struct OpenAiMessage {
-    pub role: String,
-    pub content: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct OpenAiChoice {
-    pub index: u32,
-    pub message: OpenAiMessage,
-    pub finish_reason: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct OpenAiUsage {
-    pub prompt_tokens: u32,
-    pub completion_tokens: u32,
-    pub total_tokens: u32,
+pub struct MessageWrapper {
+    pub message: Message,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct OpenAiResponse {
-    pub id: String,
-    pub object: String,
-    pub created: u64,
-    pub model: String,
-    pub choices: Vec<OpenAiChoice>,
-    pub usage: OpenAiUsage,
-    pub system_fingerprint: Option<String>,
+    pub choices: Vec<MessageWrapper>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
