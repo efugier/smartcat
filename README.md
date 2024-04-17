@@ -20,10 +20,16 @@
 Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow power users to make the most out of llms.
 
 What makes it special:
-- a set of partial prompts making the model play nice as a cli tool;
-- good io handling to insert user input in said prompts and use the result in cli-based workflows.
+- minimalist, built following to the unix philosophy with terminal and editor intergation in mind;
+- you can have full control on what LLM version, temperature and API you use;
+- good io handling to insert user input in prompts and use the result in cli-based workflows;
+- compatible with several LLM APIs (openai, Anthropic, Mistral);
+- built-in partial prompt to make the model play nice as a cli tool;
+- write and save your own prompt templates for faster reccuring tasks (simplify, optimize, tests);
+- conversation support;
+- glob expressions to include context files.
 
-Currently supports **ChatGPT** and **Mistral AI** but built to work with multiple ones seemlessly.
+Currently supports **OpenAi**, **Mistral AI** and **Claude**.
 
 
 ![](assets/workflow.gif)
@@ -38,6 +44,9 @@ Currently supports **ChatGPT** and **Mistral AI** but built to work with multipl
 
 ## Installation
 
+
+### With Cargo
+
 With an **up to date** [rust and cargo](https://www.rust-lang.org/tools/install) setup (you might consider running `rustup update`):
 
 ```
@@ -46,7 +55,9 @@ cargo install smartcat
 
 run this command again to update `smartcat`.
 
-Or download directly the binary compiled for your platform from the [release page](https://github.com/efugier/smartcat/releases).
+### By downloading the binary
+
+Chose the one compiled for your platform on the [release page](https://github.com/efugier/smartcat/releases).
 
 (the binary is named `sc`)
 
@@ -315,4 +326,5 @@ Smartcat has reached an acceptable feature set. The focus is now on upgrading th
 #### TODO
 
 - [ ] make it available on homebrew
+- [ ] automatically context fetches
 

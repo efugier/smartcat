@@ -73,7 +73,10 @@ impl From<Prompt> for AnthropicPrompt {
             prompt
                 .messages
                 .into_iter()
-                .fold(Vec::new(), |mut acc: Vec<Message>, message| {
+                .fold(Vec::new(), |mut acc: Vec<Message>, mut message| {
+                    if message.role == "system" {
+                        message.role = "user".to_string();
+                    }
                     match acc.last_mut() {
                         Some(last_message) if last_message.role == message.role => {
                             last_message.content.push_str("\n\n");
