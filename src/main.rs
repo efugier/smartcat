@@ -15,7 +15,7 @@ mod config;
 #[command(
     name = "smartcat (sc)",
     author = "Emilien Fugier",
-    version = "0.7.3",
+    version = "0.7.4",
     about = "Putting a brain behind `cat`. CLI interface to bring language models in the Unix ecosystem 🐈‍⬛",
     long_about = None
 )]
