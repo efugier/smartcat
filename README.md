@@ -329,4 +329,5 @@ Smartcat has reached an acceptable feature set. The focus is now on upgrading th
 
 - [ ] make it available on homebrew
 - [ ] automatically context fetches
+- [ ] split the config file into several, it's way too big
 

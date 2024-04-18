@@ -7,7 +7,12 @@ use crate::{
     PromptParams,
 };
 
-pub fn customize_prompt(mut prompt: Prompt, prompt_params: &PromptParams) -> Prompt {
+// TODO: simplify this mess
+pub fn customize_prompt(
+    mut prompt: Prompt,
+    prompt_params: &PromptParams,
+    custom_prompt: Option<String>,
+) -> Prompt {
     debug!("pre-customization prompt {:?}", prompt);
 
     // Override parameters
@@ -58,7 +63,7 @@ pub fn customize_prompt(mut prompt: Prompt, prompt_params: &PromptParams) -> Pro
     maybe_insert_message(context, Some("files content for context:\n\n".to_owned()));
 
     // if prompt customization was provided, add it in a new message
-    if let Some(command_text) = prompt_params.custom_prompt.clone() {
+    if let Some(command_text) = custom_prompt.clone() {
         let mut prompt_message = command_text;
         if !prompt_message.contains(PLACEHOLDER_TOKEN) {
             prompt_message.push_str(PLACEHOLDER_TOKEN);
@@ -115,7 +120,7 @@ mod tests {
         let prompt = Prompt::default();
         let prompt_params = PromptParams::default();
 
-        let customized = customize_prompt(prompt, &prompt_params);
+        let customized = customize_prompt(prompt, &prompt_params, None);
         let default_prompt = Prompt::empty();
 
         assert_eq!(customized.api, default_prompt.api);
@@ -149,7 +154,7 @@ mod tests {
             ..PromptParams::default()
         };
 
-        let customized = customize_prompt(prompt, &prompt_params);
+        let customized = customize_prompt(prompt, &prompt_params, None);
         let default_prompt = Prompt::empty();
 
         assert_eq!(customized.api, Api::AnotherApiForTests);
@@ -164,7 +169,7 @@ mod tests {
             ..PromptParams::default()
         };
 
-        let customized = customize_prompt(prompt, &prompt_params);
+        let customized = customize_prompt(prompt, &prompt_params, None);
 
         let default_prompt = Prompt::empty();
         assert_eq!(customized.model, prompt_params.model);
@@ -174,12 +179,10 @@ mod tests {
     #[test]
     fn test_customize_prompt_command_insertion() {
         let prompt = Prompt::empty();
-        let prompt_params = PromptParams {
-            custom_prompt: Some("test_command".to_owned()),
-            ..PromptParams::default()
-        };
+        let prompt_params = PromptParams::default();
+        let custom_prompt = Some("test_command".to_owned());
 
-        let customized = customize_prompt(prompt, &prompt_params);
+        let customized = customize_prompt(prompt, &prompt_params, custom_prompt);
 
         assert!(customized
             .messages
@@ -195,7 +198,7 @@ mod tests {
             ..PromptParams::default()
         };
 
-        let customized = customize_prompt(prompt, &prompt_params);
+        let customized = customize_prompt(prompt, &prompt_params, None);
 
         assert_eq!(
             customized.messages[0].content,
@@ -220,7 +223,7 @@ mod tests {
             ..PromptParams::default()
         };
 
-        let customized = customize_prompt(prompt, &prompt_params);
+        let customized = customize_prompt(prompt, &prompt_params, None);
 
         assert_eq!(
             customized.messages[0].content,
@@ -248,7 +251,7 @@ mod tests {
             ..PromptParams::default()
         };
 
-        let customized = customize_prompt(prompt, &prompt_params);
+        let customized = customize_prompt(prompt, &prompt_params, None);
 
         assert_eq!(
             customized.messages[0].content,
@@ -269,7 +272,7 @@ mod tests {
             ..PromptParams::default()
         };
 
-        let customized = customize_prompt(prompt, &prompt_params);
+        let customized = customize_prompt(prompt, &prompt_params, None);
 
         assert_eq!(customized.temperature, Some(42.));
     }
@@ -287,7 +290,7 @@ mod tests {
             ..PromptParams::default()
         };
 
-        let customized = customize_prompt(prompt, &prompt_params);
+        let customized = customize_prompt(prompt, &prompt_params, None);
 
         let last_message_content = &customized.messages.last().unwrap().content;
         assert!(
@@ -304,32 +307,33 @@ mod tests {
         let mut context_file = tempfile::NamedTempFile::new().unwrap();
         context_file.write_all(context_content.as_bytes()).unwrap();
 
-        let promt_params = PromptParams {
+        let prompt_params = PromptParams {
             api: Some(Api::AnotherApiForTests),
             model: Some("test_model_override".to_owned()),
-            custom_prompt: Some("test_command_override".to_owned()),
             context: Some(context_file.path().to_str().unwrap().to_owned()),
             after_input: Some(" test_after_input_override".to_owned()),
             system_message: Some("system message override".to_owned()),
             temperature: Some(42.),
         };
+        let custom_prompt = Some("test_command_override".to_owned());
 
-        let customized = customize_prompt(prompt, &promt_params);
+        let customized = customize_prompt(prompt, &prompt_params, custom_prompt.clone());
 
         // Mandatory fields
-        assert_eq!(customized.api, promt_params.api.unwrap());
-        assert!(customized.messages.iter().any(|m| m
-            .content
-            .contains(promt_params.custom_prompt.as_ref().unwrap())));
+        assert_eq!(customized.api, prompt_params.api.unwrap());
+        assert!(customized
+            .messages
+            .iter()
+            .any(|m| m.content.contains(custom_prompt.as_ref().unwrap())));
         assert_eq!(
             customized.messages[0].content,
-            promt_params.system_message.unwrap()
+            prompt_params.system_message.unwrap()
         );
         assert_eq!(customized.messages[0].role, "system");
 
         // Optional fields
-        assert_eq!(customized.model, promt_params.model);
-        assert_eq!(customized.temperature, promt_params.temperature);
+        assert_eq!(customized.model, prompt_params.model);
+        assert_eq!(customized.temperature, prompt_params.temperature);
         assert_eq!(
             customized.messages[1].content,
             format!(
@@ -345,7 +349,7 @@ mod tests {
                 .last()
                 .unwrap()
                 .content
-                .ends_with(&promt_params.after_input.unwrap()),
+                .ends_with(&prompt_params.after_input.unwrap()),
             "The last message should end with the after input text."
         );
     }

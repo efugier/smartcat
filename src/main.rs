@@ -1,15 +1,18 @@
-use clap::{Args, Parser};
-use log::debug;
-use std::fs;
-use std::io;
-use std::io::{Read, Write};
-
-mod cutsom_prompt;
 mod input_processing;
+mod prompt_customization;
 mod request;
 
 #[allow(dead_code)]
 mod config;
+
+use clap::{Args, Parser};
+use log::debug;
+use std::collections::HashMap;
+use std::fs;
+use std::io::{self, IsTerminal, Read, Write};
+
+use crate::config::get_last_conversation_as_prompt;
+use prompt_customization::customize_prompt;
 
 #[derive(Debug, Parser)]
 #[command(
@@ -21,20 +24,16 @@ mod config;
 )]
 struct Cli {
     #[arg(default_value_t = String::from("default"))]
-    /// which prompt in the config to fetch
-    config_prompt: String,
-    /// skip reading from stdin and use that value instead
-    #[arg(short, long)]
-    input: Option<String>,
+    /// an input or which prompt in the config to use
+    input_or_config_prompt: String,
+    /// the input if the first arg a config prompt
+    input_if_config_prompt: Option<String>,
     /// whether to extend the previous conversation or start a new one
     #[arg(short, long)]
     extend_conversation: bool,
     /// whether to repeat the input before the output, useful to extend instead of replacing
     #[arg(short, long)]
     repeat_input: bool,
-    /// skip reading from the input and read this file instead
-    #[arg(short, long)]
-    file: Option<String>,
     #[command(flatten)]
     prompt_params: PromptParams,
 }
@@ -48,9 +47,6 @@ struct PromptParams {
     /// overrides which model (of the api) to use
     #[arg(short, long)]
     model: Option<String>,
-    /// custom prompt to append before the input
-    #[arg(short = 'p', long)]
-    custom_prompt: Option<String>,
     /// suffix to add after the input and the custom prompt
     #[arg(short, long)]
     after_input: Option<String>,
@@ -68,26 +64,21 @@ struct PromptParams {
 fn main() {
     env_logger::init();
 
-    let args = Cli::parse();
-
+    let stdin = io::stdin();
     let mut output = io::stdout();
-    let mut input: Box<dyn Read> = match args.file {
-        Some(file) => Box::new(
-            fs::File::open(&file)
-                .unwrap_or_else(|error| panic!("File {} not found. {:?}", file, error)),
-        ),
-        _ => Box::new(io::stdin()),
-    };
 
     // case for testing
-    // TODO: mock API
+    // TODO: mock API and actually the real processing
     if std::env::var("SMARTCAT_TEST").unwrap_or_default() == "1" {
-        if let Err(e) = input_processing::chunk_process_input(
-            &mut input,
-            &mut output,
-            "Hello, World!\n```\n",
-            "\n```\n",
-        ) {
+        let prefix = String::from("Hello, World!\n```\n");
+        let suffix = String::from("\n```\n");
+        let mut input = String::new();
+
+        if let Err(e) = stdin
+            .lock()
+            .read_to_string(&mut input)
+            .and(output.write_all(format!("{}{}{}", prefix, input, suffix).as_bytes()))
+        {
             eprintln!("Error: {}", e);
             std::process::exit(1);
         } else {
@@ -95,40 +86,39 @@ fn main() {
         }
     }
 
+    let args = Cli::parse();
+
     config::ensure_config_files(true)
         .expect("Unable to verify that the config files exist or to generate new ones.");
 
+    let mut input = String::new();
+
+    let is_piped = !stdin.is_terminal();
+    if is_piped {
+        stdin.lock().read_to_string(&mut input).unwrap();
+    }
+
+    let mut custom_prompt: Option<String> = None;
     let prompt: config::Prompt = if args.extend_conversation {
-        let content =
-            fs::read_to_string(config::conversation_file_path()).unwrap_or_else(|error| {
-                panic!(
-                    "Could not read file {:?}, {:?}",
-                    config::conversation_file_path(),
-                    error
-                )
-            });
-        toml::from_str(&content).expect("failed to load the conversation file")
+        get_last_conversation_as_prompt()
     } else {
         let mut prompts = config::get_prompts();
-
-        let available_prompts: Vec<&String> = prompts.keys().collect();
-        let prompt_not_found_error = format!(
-            "Prompt {} not found, availables ones are: {:?}",
-            &args.config_prompt, &available_prompts
-        );
-        prompts
-            .remove(&args.config_prompt)
-            .expect(&prompt_not_found_error)
+        get_default_and_or_custom_prompt(&args, &mut prompts, &mut custom_prompt)
     };
 
-    let prompt = cutsom_prompt::customize_prompt(prompt, &args.prompt_params);
+    // if no text was piped, use the custom prompt as input
+    if input.is_empty() {
+        input.push_str(&custom_prompt.unwrap_or_default());
+        custom_prompt = None;
+    }
+
+    let prompt = customize_prompt(prompt, &args.prompt_params, custom_prompt);
 
     debug!("{:?}", prompt);
 
     match input_processing::process_input_with_request(
         prompt,
-        &mut input,
-        args.input,
+        input,
         &mut output,
         args.repeat_input,
     ) {
@@ -143,5 +133,30 @@ fn main() {
             eprintln!("Error: {}", e);
             std::process::exit(1);
         }
+    }
+}
+
+fn get_default_and_or_custom_prompt(
+    args: &Cli,
+    prompts: &mut HashMap<String, config::Prompt>,
+    custom_prompt: &mut Option<String>,
+) -> config::Prompt {
+    let available_prompts: Vec<&String> = prompts.keys().collect();
+    let prompt_not_found_error = format!(
+        "`default` prompt not found, available ones are: {:?}",
+        &available_prompts
+    );
+
+    if let Some(prompt) = prompts.remove(&args.input_or_config_prompt) {
+        if let Some(text) = args.input_if_config_prompt.clone() {
+            *custom_prompt = Some(text);
+        }
+        prompt
+    } else {
+        *custom_prompt = Some(String::from(&args.input_or_config_prompt));
+        if args.input_if_config_prompt.is_some() {
+            panic!("Invalid parameter, either provide a valid config prompt then an input, or only an input");
+        }
+        prompts.remove("default").expect(&prompt_not_found_error)
     }
 }
