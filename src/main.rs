@@ -1,18 +1,21 @@
 mod input_processing;
 mod prompt_customization;
-mod request;
+mod third_party;
 
-#[allow(dead_code)]
 mod config;
+
+use crate::config::{
+    api::Api,
+    prompt::{conversation_file_path, get_last_conversation_as_prompt, get_prompts, Prompt},
+};
+use prompt_customization::customize_prompt;
 
 use clap::{Args, Parser};
 use log::debug;
-use std::collections::HashMap;
 use std::fs;
 use std::io::{self, IsTerminal, Read, Write};
 
-use crate::config::get_last_conversation_as_prompt;
-use prompt_customization::customize_prompt;
+const DEFAULT_PROMPT_NAME: &str = "default";
 
 #[derive(Debug, Parser)]
 #[command(
@@ -20,14 +23,27 @@ use prompt_customization::customize_prompt;
     author = "Emilien Fugier",
     version = "0.7.4",
     about = "Putting a brain behind `cat`. CLI interface to bring language models in the Unix ecosystem 🐈‍⬛",
-    long_about = None
+    long_about = None,
+    after_help = "Examples:
+=========
+- sc \"say hi\"  # just ask
+
+- sc test                         # use templated prompts
+- sc test \"and parametrize them\"  # extend them on the fly
+
+- sc \"explain how to use this program\" -c **/*.md main.py  # use files as context
+
+- git diff | sc \"summarize the changes\"  # pipe data in
+
+- cat en.md | sc \"translate in french\" >> fr.md   # write data out
+- sc -e \"use a more informal tone\" -t 2 >> fr.md  # extend the conversation and raise the temprature
+"
 )]
 struct Cli {
-    #[arg(default_value_t = String::from("default"))]
-    /// an input or which prompt in the config to use
-    input_or_config_prompt: String,
-    /// the input if the first arg a config prompt
-    input_if_config_prompt: Option<String>,
+    /// ref to a prompt from config or straight input (will use `default` prompt template)
+    input_or_config_ref: Option<String>,
+    /// if the first arg matches a config ref, the second will be used as input
+    input_if_config_ref: Option<String>,
     /// whether to extend the previous conversation or start a new one
     #[arg(short, long)]
     extend_conversation: bool,
@@ -43,7 +59,7 @@ struct Cli {
 struct PromptParams {
     /// overrides which api to hit
     #[arg(long)]
-    api: Option<config::Api>,
+    api: Option<Api>,
     /// overrides which model (of the api) to use
     #[arg(short, long)]
     model: Option<String>,
@@ -53,12 +69,16 @@ struct PromptParams {
     /// system "config"  message to send after the prompt and before the first user message
     #[arg(short, long)]
     system_message: Option<String>,
-    /// glob pattern to given the matched files' content as context
-    #[arg(short, long)]
-    context: Option<String>,
-    /// temperature between 0 and 2, higher means answer further from the average
+    /// temperature higher means answer further from the average
     #[arg(short, long)]
     temperature: Option<f32>,
+    /// max number of chars to include, ask for user approval if more, 0 = no limit
+    #[arg(short = 'l', long)]
+    char_limit: Option<u32>,
+    /// glob patterns or list of files to use the content as context
+    /// make sure it's the last arg.
+    #[arg(short, long, num_args= 1.., value_delimiter = ' ', verbatim_doc_comment)]
+    context: Vec<String>,
 }
 
 fn main() {
@@ -88,29 +108,38 @@ fn main() {
 
     let args = Cli::parse();
 
-    config::ensure_config_files(true)
+    debug!("args: {:?}", args);
+
+    config::ensure_config_files()
         .expect("Unable to verify that the config files exist or to generate new ones.");
 
     let mut input = String::new();
 
     let is_piped = !stdin.is_terminal();
-    if is_piped {
-        stdin.lock().read_to_string(&mut input).unwrap();
-    }
-
     let mut custom_prompt: Option<String> = None;
-    let prompt: config::Prompt = if args.extend_conversation {
+    let prompt: Prompt = if args.extend_conversation {
+        custom_prompt = args.input_or_config_ref;
+        if args.input_if_config_ref.is_some() {
+            panic!(
+                "Invalid parameters, cannot provide a config ref when extending a conversation.\n\
+                Use `sc -e \"<your_prompt>.\"`"
+            );
+        }
         get_last_conversation_as_prompt()
     } else {
-        let mut prompts = config::get_prompts();
-        get_default_and_or_custom_prompt(&args, &mut prompts, &mut custom_prompt)
+        get_default_and_or_custom_prompt(&args, &mut custom_prompt)
     };
 
     // if no text was piped, use the custom prompt as input
-    if input.is_empty() {
+    if is_piped {
+        stdin.lock().read_to_string(&mut input).unwrap();
+    } else {
         input.push_str(&custom_prompt.unwrap_or_default());
         custom_prompt = None;
     }
+
+    debug!("input: {}", input);
+    debug!("custom_prompt: {:?}", custom_prompt);
 
     let prompt = customize_prompt(prompt, &args.prompt_params, custom_prompt);
 
@@ -124,7 +153,7 @@ fn main() {
     ) {
         Ok(prompt) => {
             let toml_string = toml::to_string(&prompt).expect("Failed to serialize prompt");
-            let mut file = fs::File::create(config::conversation_file_path())
+            let mut file = fs::File::create(conversation_file_path())
                 .expect("Failed to the conversation save file");
             file.write_all(toml_string.as_bytes())
                 .expect("Failed to write to file");
@@ -136,27 +165,34 @@ fn main() {
     }
 }
 
-fn get_default_and_or_custom_prompt(
-    args: &Cli,
-    prompts: &mut HashMap<String, config::Prompt>,
-    custom_prompt: &mut Option<String>,
-) -> config::Prompt {
+fn get_default_and_or_custom_prompt(args: &Cli, custom_prompt: &mut Option<String>) -> Prompt {
+    let mut prompts = get_prompts();
     let available_prompts: Vec<&String> = prompts.keys().collect();
     let prompt_not_found_error = format!(
         "`default` prompt not found, available ones are: {:?}",
         &available_prompts
     );
 
-    if let Some(prompt) = prompts.remove(&args.input_or_config_prompt) {
-        if let Some(text) = args.input_if_config_prompt.clone() {
-            *custom_prompt = Some(text);
+    let input_or_config_ref = args
+        .input_or_config_ref
+        .clone()
+        .unwrap_or_else(|| String::from("default"));
+
+    if let Some(prompt) = prompts.remove(&input_or_config_ref) {
+        if args.input_if_config_ref.is_some() {
+            *custom_prompt = args.input_if_config_ref.clone()
         }
         prompt
     } else {
-        *custom_prompt = Some(String::from(&args.input_or_config_prompt));
-        if args.input_if_config_prompt.is_some() {
-            panic!("Invalid parameter, either provide a valid config prompt then an input, or only an input");
+        *custom_prompt = Some(input_or_config_ref);
+        if args.input_if_config_ref.is_some() {
+            panic!(
+                "Invalid parameters, either provide a valid ref to a config prompt then an input, or only an input.\n\
+                Use `sc <config_ref> \"<your_prompt\"` or `sc \"<your_prompt>\"`"
+            );
         }
-        prompts.remove("default").expect(&prompt_not_found_error)
+        prompts
+            .remove(DEFAULT_PROMPT_NAME)
+            .expect(&prompt_not_found_error)
     }
 }

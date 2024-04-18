@@ -1,8 +1,22 @@
 use log::debug;
 use std::io::{Result, Write};
 
-use crate::config::{get_api_config, Prompt, PLACEHOLDER_TOKEN};
-use crate::request::make_api_request;
+use crate::config::{api::get_api_config, prompt::Prompt, PLACEHOLDER_TOKEN};
+use crate::third_party::make_api_request;
+
+const IS_NONINTERACTIVE_ENV_VAR: &str = "SMARTCAT_NONINTERACTIVE";
+
+pub fn is_interactive() -> bool {
+    std::env::var(IS_NONINTERACTIVE_ENV_VAR).unwrap_or_default() != "1"
+}
+
+pub fn read_user_input() -> String {
+    let mut user_input = String::new();
+    std::io::stdin()
+        .read_line(&mut user_input)
+        .expect("Failed to read line");
+    user_input.trim().to_string()
+}
 
 pub fn process_input_with_request<W: Write>(
     mut prompt: Prompt,

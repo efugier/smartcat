@@ -3,7 +3,10 @@ use log::debug;
 use std::fs;
 
 use crate::{
-    config::{Message, Prompt, PLACEHOLDER_TOKEN},
+    config::{
+        prompt::{Message, Prompt},
+        PLACEHOLDER_TOKEN,
+    },
     PromptParams,
 };
 
@@ -22,6 +25,9 @@ pub fn customize_prompt(
     if prompt_params.model.is_some() {
         prompt.model = prompt_params.model.to_owned();
     }
+    if prompt_params.char_limit.is_some() {
+        prompt.char_limit = prompt_params.char_limit;
+    }
 
     let mut first_user_message_index = prompt
         .messages
@@ -29,7 +35,7 @@ pub fn customize_prompt(
         .position(|m| m.role == "user")
         .unwrap_or(0);
 
-    // insert system or context messages
+    // insert system messages
     let mut maybe_insert_message = |content: Option<String>, prefix: Option<String>| {
         if let Some(mut content) = content {
             if let Some(mut pre) = prefix {
@@ -46,21 +52,26 @@ pub fn customize_prompt(
     };
     maybe_insert_message(prompt_params.system_message.clone(), None);
 
-    // insert matched file's content as context in a system message
-    let context = prompt_params.context.clone().and_then(|glob_pattern| {
-        let files_content = glob(&glob_pattern)
-            .expect("Failed to read glob pattern")
-            .filter_map(Result::ok)
-            .filter_map(|path| {
-                fs::read_to_string(&path)
-                    .ok()
-                    .map(|content| format!("{}:\n```\n{}\n```\n", path.display(), content))
-            })
-            .collect::<String>();
+    let context = prompt_params
+        .context
+        .iter()
+        .flat_map(|glob_pattern| {
+            glob(glob_pattern)
+                .expect("Failed to read glob pattern")
+                .filter_map(Result::ok)
+                .map(|path| {
+                    fs::read_to_string(&path)
+                        .ok()
+                        .map(|content| format!("{}:\n```\n{}\n```\n", path.display(), content))
+                })
+        })
+        .flatten()
+        .collect::<String>();
 
-        (!files_content.is_empty()).then_some(files_content)
-    });
-    maybe_insert_message(context, Some("files content for context:\n\n".to_owned()));
+    maybe_insert_message(
+        (!context.is_empty()).then_some(context),
+        Some("files content for context:\n\n".to_owned()),
+    );
 
     // if prompt customization was provided, add it in a new message
     if let Some(command_text) = custom_prompt.clone() {
@@ -110,7 +121,7 @@ pub fn customize_prompt(
 
 #[cfg(test)]
 mod tests {
-    use crate::config::Api;
+    use crate::config::api::Api;
     use std::io::Write;
 
     use super::*;
@@ -247,7 +258,7 @@ mod tests {
         context_file.write_all(context_content.as_bytes()).unwrap();
 
         let prompt_params = PromptParams {
-            context: Some(context_file.path().to_str().unwrap().to_owned()),
+            context: vec![context_file.path().to_str().unwrap().to_owned()],
             ..PromptParams::default()
         };
 
@@ -310,10 +321,11 @@ mod tests {
         let prompt_params = PromptParams {
             api: Some(Api::AnotherApiForTests),
             model: Some("test_model_override".to_owned()),
-            context: Some(context_file.path().to_str().unwrap().to_owned()),
+            context: vec![context_file.path().to_str().unwrap().to_owned()],
             after_input: Some(" test_after_input_override".to_owned()),
             system_message: Some("system message override".to_owned()),
             temperature: Some(42.),
+            char_limit: Some(50_000),
         };
         let custom_prompt = Some("test_command_override".to_owned());
 
