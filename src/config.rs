@@ -241,6 +241,17 @@ pub fn get_prompts() -> HashMap<String, Prompt> {
     toml::from_str(&content).expect("could not parse prompt file content")
 }
 
+pub fn get_last_conversation_as_prompt() -> Prompt {
+    let content = fs::read_to_string(conversation_file_path()).unwrap_or_else(|error| {
+        panic!(
+            "Could not read file {:?}, {:?}",
+            conversation_file_path(),
+            error
+        )
+    });
+    toml::from_str(&content).expect("failed to load the conversation file")
+}
+
 fn read_user_input() -> String {
     let mut user_input = String::new();
     std::io::stdin()
