@@ -63,12 +63,6 @@ struct PromptParams {
     /// overrides which model (of the api) to use
     #[arg(short, long)]
     model: Option<String>,
-    /// suffix to add after the input and the custom prompt
-    #[arg(short, long)]
-    after_input: Option<String>,
-    /// system "config"  message to send after the prompt and before the first user message
-    #[arg(short, long)]
-    system_message: Option<String>,
     /// temperature higher means answer further from the average
     #[arg(short, long)]
     temperature: Option<f32>,
@@ -133,7 +127,9 @@ fn main() {
     // if no text was piped, use the custom prompt as input
     if is_piped {
         stdin.lock().read_to_string(&mut input).unwrap();
-    } else {
+    }
+
+    if input.is_empty() {
         input.push_str(&custom_prompt.unwrap_or_default());
         custom_prompt = None;
     }

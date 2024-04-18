@@ -87,11 +87,14 @@ pub fn ensure_config_files() -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::{
-        api::{api_keys_path, Api, ApiConfig},
-        ensure_config_files,
-        prompt::{prompts_path, Prompt},
-        resolve_config_path, CUSTOM_CONFIG_ENV_VAR, DEFAULT_CONFIG_PATH,
+    use crate::{
+        config::{
+            api::{api_keys_path, Api, ApiConfig},
+            ensure_config_files,
+            prompt::{prompts_path, Prompt},
+            resolve_config_path, CUSTOM_CONFIG_ENV_VAR, DEFAULT_CONFIG_PATH,
+        },
+        input_processing::IS_NONINTERACTIVE_ENV_VAR,
     };
     use serial_test::serial;
     use std::collections::HashMap;
@@ -143,6 +146,7 @@ mod tests {
         let temp_dir = tempfile::TempDir::new()?;
         let original_value = env::var(CUSTOM_CONFIG_ENV_VAR);
         env::set_var(CUSTOM_CONFIG_ENV_VAR, temp_dir.path());
+        env::set_var(IS_NONINTERACTIVE_ENV_VAR, "1");
 
         let api_keys_path = api_keys_path();
         let prompts_path = prompts_path();
@@ -171,6 +175,7 @@ mod tests {
 
         let original_value = env::var(CUSTOM_CONFIG_ENV_VAR);
         env::set_var(CUSTOM_CONFIG_ENV_VAR, temp_dir.path());
+        env::set_var(IS_NONINTERACTIVE_ENV_VAR, "1");
 
         let api_keys_path = api_keys_path();
         let prompts_path = prompts_path();
@@ -215,6 +220,7 @@ mod tests {
         let temp_dir = tempfile::TempDir::new()?;
         let original_value = env::var(CUSTOM_CONFIG_ENV_VAR);
         env::set_var(CUSTOM_CONFIG_ENV_VAR, temp_dir.path());
+        env::set_var(IS_NONINTERACTIVE_ENV_VAR, "1");
 
         let api_keys_path = api_keys_path();
         let prompts_path = prompts_path();

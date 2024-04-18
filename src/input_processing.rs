@@ -4,7 +4,7 @@ use std::io::{Result, Write};
 use crate::config::{api::get_api_config, prompt::Prompt, PLACEHOLDER_TOKEN};
 use crate::third_party::make_api_request;
 
-const IS_NONINTERACTIVE_ENV_VAR: &str = "SMARTCAT_NONINTERACTIVE";
+pub const IS_NONINTERACTIVE_ENV_VAR: &str = "SMARTCAT_NONINTERACTIVE";
 
 pub fn is_interactive() -> bool {
     std::env::var(IS_NONINTERACTIVE_ENV_VAR).unwrap_or_default() != "1"
