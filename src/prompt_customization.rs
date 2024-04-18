@@ -10,7 +10,6 @@ use crate::{
     PromptParams,
 };
 
-// TODO: simplify this mess
 pub fn customize_prompt(
     mut prompt: Prompt,
     prompt_params: &PromptParams,
@@ -29,29 +28,7 @@ pub fn customize_prompt(
         prompt.char_limit = prompt_params.char_limit;
     }
 
-    let mut first_user_message_index = prompt
-        .messages
-        .iter()
-        .position(|m| m.role == "user")
-        .unwrap_or(0);
-
-    // insert system messages
-    let mut maybe_insert_message = |content: Option<String>, prefix: Option<String>| {
-        if let Some(mut content) = content {
-            if let Some(mut pre) = prefix {
-                pre.push_str(&content);
-                content = pre;
-            }
-
-            let system_message = Message::system(&content);
-            prompt
-                .messages
-                .insert(first_user_message_index, system_message);
-            first_user_message_index += 1;
-        }
-    };
-    maybe_insert_message(prompt_params.system_message.clone(), None);
-
+    // Collect the content of all the context files
     let context = prompt_params
         .context
         .iter()
@@ -68,10 +45,12 @@ pub fn customize_prompt(
         .flatten()
         .collect::<String>();
 
-    maybe_insert_message(
-        (!context.is_empty()).then_some(context),
-        Some("files content for context:\n\n".to_owned()),
-    );
+    if !context.is_empty() {
+        prompt.messages.push(Message::system(&format!(
+            "files content for context:\n\n{}",
+            context
+        )));
+    }
 
     // if prompt customization was provided, add it in a new message
     if let Some(command_text) = custom_prompt.clone() {
@@ -88,7 +67,7 @@ pub fn customize_prompt(
 
     // get the last message for check and make sure it's a user one
     let mut last_message =
-        if prompt.messages.is_empty() | prompt.messages.last().is_some_and(|m| m.role != "user") {
+        if prompt.messages.is_empty() || prompt.messages.last().is_some_and(|m| m.role != "user") {
             Message::user(PLACEHOLDER_TOKEN)
         } else {
             prompt.messages.pop().unwrap()
@@ -97,11 +76,6 @@ pub fn customize_prompt(
     // verify that the last message contrains a placeholder
     if !last_message.content.contains(PLACEHOLDER_TOKEN) {
         last_message.content.push_str(PLACEHOLDER_TOKEN);
-    }
-
-    // add the after input text
-    if let Some(after_input_text) = prompt_params.after_input.clone() {
-        last_message.content.push_str(&after_input_text);
     }
 
     if let Some(temperature) = prompt_params.temperature {
@@ -202,55 +176,6 @@ mod tests {
     }
 
     #[test]
-    fn test_customize_prompt_system_message_insertion() {
-        let prompt = Prompt::empty();
-        let prompt_params = PromptParams {
-            system_message: Some("system message".to_owned()),
-            ..PromptParams::default()
-        };
-
-        let customized = customize_prompt(prompt, &prompt_params, None);
-
-        assert_eq!(
-            customized.messages[0].content,
-            prompt_params.system_message.unwrap(),
-            "{:?}",
-            customized.messages
-        );
-        assert_eq!(
-            customized.messages[0].role,
-            Message::system("").role,
-            "{:?}",
-            customized.messages
-        );
-    }
-
-    #[test]
-    fn test_customize_prompt_system_message_insertion_with_user_message() {
-        let mut prompt = Prompt::empty();
-        prompt.messages.push(Message::user("user message"));
-        let prompt_params = PromptParams {
-            system_message: Some("system message".to_owned()),
-            ..PromptParams::default()
-        };
-
-        let customized = customize_prompt(prompt, &prompt_params, None);
-
-        assert_eq!(
-            customized.messages[0].content,
-            prompt_params.system_message.unwrap(),
-            "{:?}",
-            customized.messages
-        );
-        assert_eq!(
-            customized.messages[0].role,
-            Message::system("").role,
-            "{:?}",
-            customized.messages
-        );
-    }
-
-    #[test]
     fn test_customize_prompt_with_context_file() {
         let prompt = Prompt::empty();
         let context_content = "hello there".to_owned();
@@ -289,29 +214,6 @@ mod tests {
     }
 
     #[test]
-    fn test_customize_prompt_after_input_insertion() {
-        let mut prompt = Prompt::empty();
-        // Adding placeholder and command to ensure they are in the last user message.
-        prompt
-            .messages
-            .push(Message::user(&format!("command {}", PLACEHOLDER_TOKEN)));
-
-        let prompt_params = PromptParams {
-            after_input: Some("-- after input".to_owned()),
-            ..PromptParams::default()
-        };
-
-        let customized = customize_prompt(prompt, &prompt_params, None);
-
-        let last_message_content = &customized.messages.last().unwrap().content;
-        assert!(
-            last_message_content.ends_with("-- after input"),
-            "The last message should end with the after input text. Got {}",
-            &last_message_content
-        )
-    }
-
-    #[test]
     fn test_customize_prompt_with_all_overrides() {
         let prompt = Prompt::empty();
         let context_content = "hello there".to_owned();
@@ -322,8 +224,6 @@ mod tests {
             api: Some(Api::AnotherApiForTests),
             model: Some("test_model_override".to_owned()),
             context: vec![context_file.path().to_str().unwrap().to_owned()],
-            after_input: Some(" test_after_input_override".to_owned()),
-            system_message: Some("system message override".to_owned()),
             temperature: Some(42.),
             char_limit: Some(50_000),
         };
@@ -337,32 +237,18 @@ mod tests {
             .messages
             .iter()
             .any(|m| m.content.contains(custom_prompt.as_ref().unwrap())));
-        assert_eq!(
-            customized.messages[0].content,
-            prompt_params.system_message.unwrap()
-        );
-        assert_eq!(customized.messages[0].role, "system");
 
         // Optional fields
         assert_eq!(customized.model, prompt_params.model);
         assert_eq!(customized.temperature, prompt_params.temperature);
         assert_eq!(
-            customized.messages[1].content,
+            customized.messages[0].content,
             format!(
                 "files content for context:\n\n{}:\n```\n{}\n```\n",
                 context_file.path().display(),
                 context_content
             )
         );
-        assert_eq!(customized.messages[1].role, "system");
-        assert!(
-            customized
-                .messages
-                .last()
-                .unwrap()
-                .content
-                .ends_with(&prompt_params.after_input.unwrap()),
-            "The last message should end with the after input text."
-        );
+        assert_eq!(customized.messages[0].role, "system");
     }
 }
