@@ -23,6 +23,7 @@ log = "0"
 serde = { version = "1", features = ["derive"] }
 toml = "0"
 ureq = { version="2", features = ["json"] }
+env_logger = "0"
 
 [dev-dependencies]
 tempfile = "3"

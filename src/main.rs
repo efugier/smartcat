@@ -66,6 +66,8 @@ struct PromptParams {
 }
 
 fn main() {
+    env_logger::init();
+
     let args = Cli::parse();
 
     let mut output = io::stdout();

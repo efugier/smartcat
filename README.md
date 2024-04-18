@@ -20,16 +20,16 @@
 Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow power users to make the most out of llms.
 
 What makes it special:
+- made for power users;
 - minimalist, built following to the unix philosophy with terminal and editor intergation in mind;
-- you can have full control on what LLM version, temperature and API you use;
 - good io handling to insert user input in prompts and use the result in cli-based workflows;
-- compatible with several LLM APIs (openai, Anthropic, Mistral);
 - built-in partial prompt to make the model play nice as a cli tool;
-- write and save your own prompt templates for faster reccuring tasks (simplify, optimize, tests);
+- full configurability on which API, LLM version and temperature you use;
+- write and save your own prompt templates for faster reccuring tasks (simplify, optimize, tests, etc);
 - conversation support;
 - glob expressions to include context files.
 
-Currently supports **OpenAi**, **Mistral AI** and **Claude**.
+Currently supports **OpenAi**, **Mistral AI** and **Anthropic** APIs.
 
 
 ![](assets/workflow.gif)
@@ -236,7 +236,8 @@ These are only some ideas to get started, experiment for yourself!
 - by default lives at `$HOME/.config/smartcat`
 - the directory can be set using the `SMARTCAT_CONFIG_PATH` environement variable
 - use `#[<input>]` as the placeholder for input when writing prompts
-- the default model is `gpt-4` but I recommend trying the latest ones and see which one works best for you. I currently use `gpt-4-1106-preview`.
+- the default model is `gpt-4` but I recommend trying the latest ones and see which one works best for you;
+- you can play with the temperature and set a default for each prompt depending on its use case.
 
 Three files are used:
 
@@ -289,6 +290,7 @@ messages = []
 
 [write_tests]
 api = "openai"
+temperature = 0.0
 
 [[write_tests.messages]]
 role = "system"
