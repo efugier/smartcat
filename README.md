@@ -37,8 +37,8 @@ Currently supports **OpenAi**, **Mistral AI** and **Anthropic** APIs.
 - [Installation](#installation-)
 - [Usage](#usage)
 - [A few examples to get started 🐈‍⬛](#a-few-examples-to-get-started-)
-  - [Manipulate file and text streams](#manipulate-file-and-text-streams)
   - [Integrating with editors](#integrating-with-editors)
+    - [Example workflows](#example-workflows)
 - [Configuration](#configuration) ← please read this carefully
 - [Developping](#developping)
 
@@ -71,38 +71,23 @@ A `default` prompt is needed for `smartcat` to know which api and model to hit.
 ## Usage
 
 ```text
-Usage: sc [OPTIONS] [CONFIG_PROMPT]
+Usage: sc [OPTIONS] [INPUT_OR_CONFIG_REF] [INPUT_IF_CONFIG_REF]
 
 Arguments:
-  [CONFIG_PROMPT]  which prompt in the config to fetch [default: default]
+  [INPUT_OR_CONFIG_REF]  ref to a prompt from config or straight input (will use `default` prompt template)
+  [INPUT_IF_CONFIG_REF]  if the first arg matches a config ref, the second will be used as input
 
 Options:
-  -i, --input <INPUT>
-          skip reading from stdin and use that value instead
-  -p, --custom-prompt <CUSTOM_PROMPT>
-          custom prompt to append before the input
-  -e, --extend-conversation
-          whether to extend the previous conversation or start a new one
-  -r, --repeat-input
-          whether to repeat the input before the output, useful to extend instead of replacing
-  -c, --context <CONTEXT>
-          glob pattern to given the matched files' content as context
-  -s, --system-message <SYSTEM_MESSAGE>
-          system "config"  message to send after the prompt and before the first user message
-  -a, --after-input <AFTER_INPUT>
-          suffix to add after the input and the custom prompt
-  -f, --file <FILE>
-          skip reading from the input and read this file instead
-  -t, --temperature <TEMPERATURE>
-          temperature between 0 and 2, higher means answer further from the average
-      --api <API>
-          overrides which api to hit [possible values: openai, mistral, another-api-for-tests]
-  -m, --model <MODEL>
-          overrides which model (of the api) to use
-  -h, --help
-          Print help
-  -V, --version
-          Print version
+  -e, --extend-conversation        whether to extend the previous conversation or start a new one
+  -r, --repeat-input               whether to repeat the input before the output, useful to extend instead of replacing
+      --api <API>                  overrides which api to hit [possible values: openai, mistral, anthropic]
+  -m, --model <MODEL>              overrides which model (of the api) to use
+  -t, --temperature <TEMPERATURE>  temperature higher means answer further from the average
+  -l, --char-limit <CHAR_LIMIT>    max number of chars to include, ask for user approval if more, 0 = no limit
+  -c, --context <CONTEXT>...       glob patterns or list of files to use the content as context
+                                   make sure it's the last arg.
+  -h, --help                       Print help
+  -V, --version                    Print version
 ```
 
 You can use it to **accomplish tasks in the CLI** but **also in your editors** (if they are good unix citizens, i.e. work with shell commands and text streams) to complete, refactor, write tests... anything!
@@ -111,66 +96,19 @@ The key to make this work seamlessly is a good default prompt that tells the mod
 
 ## A few examples to get started 🐈‍⬛
 
-Ask anything without leaving the confort of your terminal! Use the `-i` flag so that it doesn't wait for piped input.
+```
+sc "say hi"  # just ask
 
-```
-sc -i "write an overview of this project's usage" -c "src/**/*.rs"
-```
-> _This project is a smart version of the Unix cat command. It takes text and a prompt, then outputs text according to specifications. The output is clean and ready for further processing by other programs, making it useful for precise text control in toolchains or workflow automation._
+sc test                         # use templated prompts
+sc test "and parametrize them"  # extend them on the fly
 
-```
-sc -i "sed command to remove trailaing whitespaces at the end of all non-markdown files?"
-sed -i '' 's/[ \t]*$//' *.* !(*.md)
-```
+sc "explain how to use this program" -c **/*.md main.py  # use files as context
 
-continue the last conversation use `-e`
+git diff | sc "summarize the changes"  # pipe data in
 
+cat en.md | sc "translate in french" >> fr.md   # write data out
+sc -e "use a more informal tone" -t 2 >> fr.md  # extend the conversation and raise the temprature
 ```
-sc -e -i "and using awk?"
-awk '{ sub(/[ \t]+$/, ""); print }' file.ext > file.tmp && mv file.tmp file.ext
-```
-
-```
-sc -i "shell script to migrate a repository from pipenv to poetry" >> poetry_mirgation.sh
-```
-
-get another opinion
-
-```
-sc -i "shell script to migrate a repository from pipenv to poetry" --api mistral >> poetry_mirgation_mistral.sh
-```
-
-### Manipulate file and text streams
-
-```
-cat Cargo.toml | sc -p "write a short poem about the content of the file"
-
-A file named package,
-Holds the keys of a software's age.
-With a name, version, and edition too,
-The content speaks of something new.
-[...]
-```
-
-```
-sc -f Cargo.toml -p "translate the following file in json" >> save Cargo.json
-```
-
-```
-cat my_stuff.py | \
-sc -p "write a parametrized test suite for the following code using pytest" \
--s "output only the code, as a standalone file with the imports. \n" \
--a "" \
-> test.py
-```
-
-If you find yourself reusing prompts often, you can create a dedicated config entries and it becomes the following:
-
-```
-sc write_tests -f my_file.py > test.py
-```
-
-see example in the [configuration section](#Configuration).
 
 ### Integrating with editors
 
@@ -182,11 +120,11 @@ The `-r` flag can be used to decide whether to replace or extend the selection.
 Start by selecting some text, then press `:`. You can then pipe the selection content to `smartcat`.
 
 ```
-:'<,'>!sc -p "replace the versions with wildcards"
+:'<,'>!sc "replace the versions with wildcards"
 ```
 
 ```
-:'<,'>!sc -p "fix the typos in this text"
+:'<,'>!sc "fix this function"
 ```
 
 will **replace** the current selection with the same text transformed by the language model.
@@ -197,6 +135,12 @@ will **replace** the current selection with the same text transformed by the lan
 
 will **append** at the end of the current selection the result of the language model.
 
+Add the following remap to your vimrc for easy access:
+
+```vimrc
+nnoremap <leader>sc :'<,'>!sc
+```
+
 #### Helix and Kakoune
 
 Same concept, different shortcut, simply press the pipe key to redirect the selection to `smarcat`.
@@ -206,30 +150,52 @@ pipe:sc write_test -r
 ```
 With some remapping you may have your most reccurrent action attached to few keystrokes e.g. `<leader>wt`!
 
-#### Example Workflow
+#### Example Workflows
+
+To enhance coding:
 
 select a struct
 
 ```
-:'<,'>!sc -r -p "implement the traits FromStr and ToString for this struct"
+:'<,'>!sc "implement the traits FromStr and ToString for this struct"
 ```
 
 select the generated impl block
 
 ```
-:'<,'>!sc -e -i "can you make it more concise?"
+:'<,'>!sc -e "can you make it more concise?"
 ```
 
 put the cursor at the bottom of the file and give example usage as input
 
 ```
-:'<,'>!sc -e -p "now write tests for it knowing it's used like this" -f src/main.rs
+:'<,'>!sc -e "now write tests for it knowing it's used like this" -c src/main.rs
 ```
 
 ...
 
+To have a full conversation with a llm from a markdown file:
 
-These are only some ideas to get started, experiment for yourself!
+```
+vim problem_solving.md
+
+> write your question as comment in the markdown file then select your question
+> and send it to smartcat using the aforementioned trick, use `-r` to repeat the input.
+
+If you wan to continue the conversation, write your new question as a comment and repeat
+the previous step with `-e -r`.
+
+> This allows you to keep track of your questions and forms a nice reusable document.
+```
+
+
+For quick questions:
+
+```
+sc "my quick question"
+```
+
+which will likely be your fasted path anser because you'll have a shortcut to opens your terminal and there will be no tab finding, no logins, no redirects etc.
 
 # Configuration
 
@@ -243,7 +209,7 @@ Three files are used:
 
 `conversation.toml`
 
-stores the latest chat if you need to continue it
+which stores the latest chat if you need to continue it.
 
 `.api_configs.toml`
 
@@ -316,7 +282,7 @@ content ='''Write tests using pytest for the following code. Parametrize it if a
 '''
 ```
 
-see [the config setup file](./src/config.rs) for more details.
+see [the config setup file](./src/config/mod.rs) for more details.
 
 ## Developping
 
@@ -329,5 +295,4 @@ Smartcat has reached an acceptable feature set. The focus is now on upgrading th
 #### TODO
 
 - [ ] make it available on homebrew
-- [ ] simplify the prompt customization function
 - [ ] automagical context fetches
