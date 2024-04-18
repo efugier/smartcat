@@ -88,8 +88,13 @@ pub fn customize_prompt(mut prompt: Prompt, prompt_params: &PromptParams) -> Pro
         last_message.content.push_str(&after_input_text);
     }
 
-    if prompt_params.temperature.is_some() {
-        prompt.temperature = prompt_params.temperature;
+    if let Some(temperature) = prompt_params.temperature {
+        if temperature == 0. {
+            // a temperature of 0 does not lead to a deterministic result for current API
+            prompt.temperature = Some(1e-13);
+        } else {
+            prompt.temperature = prompt_params.temperature;
+        }
     }
     prompt.messages.push(last_message);
 
