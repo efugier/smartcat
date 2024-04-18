@@ -262,6 +262,7 @@ url = "https://api.mistral.ai/v1/chat/completions"
 api_key = "<yet_another_api_key>"
 url = "https://api.anthropic.com/v1/messages"
 default_model = "claude-3-opus-20240229"
+version = "2023-06-01"
 ```
 
 `prompts.toml`
@@ -328,6 +329,5 @@ Smartcat has reached an acceptable feature set. The focus is now on upgrading th
 #### TODO
 
 - [ ] make it available on homebrew
-- [ ] automatically context fetches
-- [ ] split the config file into several, it's way too big
-
+- [ ] simplify the prompt customization function
+- [ ] automagical context fetches
