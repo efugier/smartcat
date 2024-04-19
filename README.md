@@ -185,7 +185,7 @@ vim problem_solving.md
 If you wan to continue the conversation, write your new question as a comment and repeat
 the previous step with `-e -r`.
 
-> This allows you to keep track of your questions and forms a nice reusable document.
+> This allows you to keep track of your questions and make a nice reusable document.
 ```
 
 
