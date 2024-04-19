@@ -32,7 +32,9 @@ What makes it special:
 Currently supports **OpenAi**, **Mistral AI** and **Anthropic** APIs.
 
 
-![](assets/workflow.gif)
+<p align="center">
+  <img src="assets/workflow.gif" />
+</p>
 
 - [Installation](#installation-)
 - [Usage](#usage)
