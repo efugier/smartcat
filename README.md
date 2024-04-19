@@ -190,6 +190,10 @@ the previous step with `-e -r`.
 > This allows you to keep track of your questions and make a nice reusable document.
 ```
 
+<p align="center">
+  <img src="assets/qatohtml.gif" />
+</p>
+
 
 For quick questions:
 
