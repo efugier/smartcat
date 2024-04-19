@@ -20,8 +20,8 @@
 Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow power users to make the most out of llms.
 
 What makes it special:
-- made for power users;
-- minimalist, built following to the unix philosophy with terminal and editor intergation in mind;
+- made for power users, tailor the config to reduce overhead on your most the most repetitive tasks;
+- minimalist, built according the unix philosophy with terminal and editor intergation in mind;
 - good io handling to insert user input in prompts and use the result in cli-based workflows;
 - built-in partial prompt to make the model play nice as a cli tool;
 - full configurability on which API, LLM version and temperature you use;
@@ -154,7 +154,15 @@ With some remapping you may have your most reccurrent action attached to few key
 
 #### Example Workflows
 
-To enhance coding:
+**For quick questions:**
+
+```
+sc "my quick question"
+```
+
+which will likely be your fastest path to answer: a shortcut to opens your terminal then type 4 characters. No tab finding, no logins, no redirects etc.
+
+**To enhance coding:**
 
 select a struct
 
@@ -176,7 +184,7 @@ put the cursor at the bottom of the file and give example usage as input
 
 ...
 
-To have a full conversation with a llm from a markdown file:
+**To have a full conversation with a llm from a markdown file:**
 
 ```
 vim problem_solving.md
@@ -194,14 +202,6 @@ the previous step with `-e -r`.
   <img src="assets/qatohtml.gif" />
 </p>
 
-
-For quick questions:
-
-```
-sc "my quick question"
-```
-
-which will likely be your fasted path anser because you'll have a shortcut to opens your terminal and there will be no tab finding, no logins, no redirects etc.
 
 # Configuration
 
