@@ -262,6 +262,11 @@ mod tests {
         );
 
         assert_eq!(
+            api_config.get(&Api::Groq.to_string()),
+            Some(&ApiConfig::groq())
+        );
+
+        assert_eq!(
             api_config.get(&Api::Anthropic.to_string()),
             Some(&ApiConfig::anthropic())
         );
