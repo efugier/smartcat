@@ -20,6 +20,7 @@
 Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow power users to make the most out of llms.
 
 What makes it special:
+
 - made for power users, tailor the config to reduce overhead on your most the most repetitive tasks;
 - minimalist, built according the unix philosophy with terminal and editor intergation in mind;
 - good io handling to insert user input in prompts and use the result in cli-based workflows;
@@ -29,7 +30,12 @@ What makes it special:
 - conversation support;
 - glob expressions to include context files.
 
-Currently supports **OpenAi**, **Mistral AI** and **Anthropic** APIs.
+Currently supports the following APIs:
+
+- **[OpenAi](https://platform.openai.com/docs/models/overview)**
+- **[Mistral AI](https://docs.mistral.ai/getting-started/models/)**
+- **[Anthropic](https://docs.anthropic.com/claude/docs/models-overview)**
+- **[Groq](https://console.groq.com/docs/models)**
 
 
 <p align="center">
@@ -82,7 +88,7 @@ Arguments:
 Options:
   -e, --extend-conversation        whether to extend the previous conversation or start a new one
   -r, --repeat-input               whether to repeat the input before the output, useful to extend instead of replacing
-      --api <API>                  overrides which api to hit [possible values: openai, mistral, anthropic]
+      --api <API>                  overrides which api to hit [possible values: openai, mistral, groq, anthropic]
   -m, --model <MODEL>              overrides which model (of the api) to use
   -t, --temperature <TEMPERATURE>  temperature higher means answer further from the average
   -l, --char-limit <CHAR_LIMIT>    max number of chars to include, ask for user approval if more, 0 = no limit
@@ -229,6 +235,11 @@ url = "https://api.openai.com/v1/chat/completions"
 api_key_command = "pass mistral/api_key"  # you can use a command to grab the key
 default_model = "mistral-medium"
 url = "https://api.mistral.ai/v1/chat/completions"
+
+[groq]
+api_key_command = "pass groq/api_key"
+default_model = "llama3-70b-8192"
+url = "https://api.groq.com/openai/v1/chat/completions"
 
 [anthropic]
 api_key = "<yet_another_api_key>"

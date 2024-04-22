@@ -32,7 +32,7 @@ pub fn make_api_request(api_config: ApiConfig, prompt: &Prompt) -> io::Result<Me
 
     let request = ureq::post(&api_config.url);
     let response_text: String = match prompt.api {
-        Api::Openai | Api::Mistral => {
+        Api::Openai | Api::Mistral | Api::Groq => {
             let request = request.set("Content-Type", "application/json").set(
                 "Authorization",
                 &format!("Bearer {}", &api_config.get_api_key()),
