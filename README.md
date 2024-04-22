@@ -160,7 +160,7 @@ With some remapping you may have your most reccurrent action attached to few key
 sc "my quick question"
 ```
 
-which will likely be your fastest path to answer: a shortcut to opens your terminal then type 4 characters. No tab finding, no logins, no redirects etc.
+which will likely be **your fastest path to answer**: a shortcut to open your terminal (if you're not in it already), `sc` and you're set. No tab finding, no logins, no redirects etc.
 
 **To enhance coding:**
 
