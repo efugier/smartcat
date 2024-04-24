@@ -26,7 +26,7 @@ Puts a brain behind `cat`! CLI interface to bring language models in the Unix ec
 
 What makes it special:
 
-- made for power users, tailor the config to reduce overhead on your most the most repetitive tasks;
+- made for power users, tailor the config to reduce overhead on your most frequent tasks;
 - minimalist, built according the unix philosophy with terminal and editor intergation in mind;
 - good io handling to insert user input in prompts and use the result in cli-based workflows;
 - built-in partial prompt to make the model play nice as a cli tool;
