@@ -8,6 +8,8 @@ pub(super) struct OpenAiPrompt {
     pub messages: Vec<Message>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub temperature: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stream: Option<bool>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -17,6 +19,8 @@ pub(super) struct AnthropicPrompt {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub temperature: Option<f32>,
     pub max_tokens: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stream: Option<bool>,
 }
 
 impl From<Prompt> for OpenAiPrompt {
@@ -27,6 +31,7 @@ impl From<Prompt> for OpenAiPrompt {
                 .expect("model must be specified either in the api config or in the prompt config"),
             messages: prompt.messages,
             temperature: prompt.temperature,
+            stream: prompt.stream,
         }
     }
 }
@@ -55,6 +60,7 @@ impl From<Prompt> for AnthropicPrompt {
             model: prompt.model.expect("model must be specified"),
             messages: merged_messages,
             temperature: prompt.temperature,
+            stream: prompt.stream,
             max_tokens: 4096,
         }
     }

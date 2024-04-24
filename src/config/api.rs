@@ -15,6 +15,7 @@ const API_KEYS_FILE: &str = ".api_configs.toml";
 #[serde(rename_all = "lowercase")]
 pub enum Api {
     AnotherApiForTests,
+    Ollama,
     Anthropic,
     Groq,
     Mistral,
@@ -26,6 +27,7 @@ impl FromStr for Api {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
+            "ollama" => Ok(Api::Ollama),
             "openai" => Ok(Api::Openai),
             "mistral" => Ok(Api::Mistral),
             "groq" => Ok(Api::Groq),
@@ -38,6 +40,7 @@ impl FromStr for Api {
 impl ToString for Api {
     fn to_string(&self) -> String {
         match self {
+            Api::Ollama => "ollama".to_string(),
             Api::Openai => "openai".to_string(),
             Api::Mistral => "mistral".to_string(),
             Api::Groq => "groq".to_string(),
@@ -66,7 +69,7 @@ pub struct ApiConfig {
 impl Default for ApiConfig {
     // default to openai
     fn default() -> Self {
-        ApiConfig::openai()
+        ApiConfig::ollama()
     }
 }
 
@@ -88,7 +91,17 @@ impl ApiConfig {
                         .to_string()
                 })
             })
-            .expect("No api_key found.")
+            .unwrap_or_default()
+    }
+
+    pub(super) fn ollama() -> Self {
+        ApiConfig {
+            api_key_command: None,
+            api_key: None,
+            url: String::from("http://localhost:11434/api/chat"),
+            default_model: Some(String::from("phi3")),
+            version: None,
+        }
     }
 
     pub(super) fn openai() -> Self {
@@ -130,34 +143,22 @@ impl ApiConfig {
             version: Some(String::from("2023-06-01")),
         }
     }
-
-    pub(super) fn default_with_api_key(api_key: Option<String>) -> Self {
-        ApiConfig {
-            api_key_command: None,
-            api_key,
-            url: String::from("https://api.openai.com/v1/chat/completions"),
-            default_model: Some(String::from("gpt-4")),
-            version: None,
-        }
-    }
 }
 
 pub(super) fn api_keys_path() -> PathBuf {
     resolve_config_path().join(API_KEYS_FILE)
 }
 
-pub(super) fn generate_api_keys_file(api_key: Option<String>) -> std::io::Result<()> {
+pub(super) fn generate_api_keys_file() -> std::io::Result<()> {
     let mut api_config = HashMap::new();
+    api_config.insert(Api::Ollama.to_string(), ApiConfig::openai());
     api_config.insert(Api::Openai.to_string(), ApiConfig::openai());
     api_config.insert(Api::Mistral.to_string(), ApiConfig::mistral());
     api_config.insert(Api::Groq.to_string(), ApiConfig::groq());
     api_config.insert(Api::Anthropic.to_string(), ApiConfig::anthropic());
 
     // Default, should override one of the above
-    api_config.insert(
-        Prompt::default().api.to_string(),
-        ApiConfig::default_with_api_key(api_key),
-    );
+    api_config.insert(Prompt::default().api.to_string(), ApiConfig::default());
 
     std::fs::create_dir_all(api_keys_path().parent().unwrap())?;
 

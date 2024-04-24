@@ -4,6 +4,7 @@ mod response_parsing;
 use self::prompt_adapters::{AnthropicPrompt, OpenAiPrompt};
 use self::response_parsing::{parse_response, AnthropicResponse, OpenAiResponse};
 use crate::input_processing::is_interactive;
+use crate::third_party::response_parsing::OllamaResponse;
 use crate::{
     config::{
         api::{Api, ApiConfig},
@@ -30,8 +31,16 @@ pub fn make_api_request(api_config: ApiConfig, prompt: &Prompt) -> io::Result<Me
         prompt.model = api_config.default_model.clone()
     }
 
+    prompt.stream = Some(false);
+
     let request = ureq::post(&api_config.url);
     let response_text: String = match prompt.api {
+        Api::Ollama => {
+            let request = request.set("Content-Type", "application/json");
+            let response: OllamaResponse =
+                parse_response(request.send_json(OpenAiPrompt::from(prompt)))?.into_json()?;
+            response.into()
+        }
         Api::Openai | Api::Mistral | Api::Groq => {
             let request = request.set("Content-Type", "application/json").set(
                 "Authorization",
@@ -55,11 +64,7 @@ pub fn make_api_request(api_config: ApiConfig, prompt: &Prompt) -> io::Result<Me
                 parse_response(request.send_json(AnthropicPrompt::from(prompt)))?.into_json()?;
             response.into()
         }
-        unknown_api => panic!(
-            "{:?} is not implemented, use one among {:?}",
-            unknown_api,
-            vec![Api::Openai, Api::Mistral, Api::Anthropic]
-        ),
+        Api::AnotherApiForTests => panic!("This api is not made for actual use."),
     };
 
     Ok(Message::assistant(&response_text))
