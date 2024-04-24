@@ -19,6 +19,11 @@
 
 Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow power users to make the most out of llms.
 
+<p align="center">
+  <img src="assets/workflow.gif" />
+</p>
+
+
 What makes it special:
 
 - made for power users, tailor the config to reduce overhead on your most the most repetitive tasks;
@@ -32,15 +37,11 @@ What makes it special:
 
 Currently supports the following APIs:
 
-- **[OpenAi](https://platform.openai.com/docs/models/overview)**
-- **[Mistral AI](https://docs.mistral.ai/getting-started/models/)**
-- **[Anthropic](https://docs.anthropic.com/claude/docs/models-overview)**
-- **[Groq](https://console.groq.com/docs/models)**
+- Local runs with **[Ollama](https://github.com/ollama/ollama/blob/main/docs/README.md)** or any server compliant with its format, see the [Ollama setup](#ollama-setup) section for the free and easiest way to get started!  
+Answers might be slow depending on your setup, you'll want to try the third party APIs for an optimal workflow.
+- **[OpenAi](https://platform.openai.com/docs/models/overview)**, **[Mistral AI](https://docs.mistral.ai/getting-started/models/)**, **[Anthropic](https://docs.anthropic.com/claude/docs/models-overview)**, **[Groq](https://console.groq.com/docs/models)**.
 
-
-<p align="center">
-  <img src="assets/workflow.gif" />
-</p>
+# Table of Contents
 
 - [Installation](#installation-)
 - [Usage](#usage)
@@ -48,6 +49,7 @@ Currently supports the following APIs:
   - [Integrating with editors](#integrating-with-editors)
     - [Example workflows](#example-workflows)
 - [Configuration](#configuration) ← please read this carefully
+    - [Ollama setup](#ollama-setup) ← easiest way to get running for free
 - [Developping](#developping)
 
 ## Installation
@@ -88,7 +90,7 @@ Arguments:
 Options:
   -e, --extend-conversation        whether to extend the previous conversation or start a new one
   -r, --repeat-input               whether to repeat the input before the output, useful to extend instead of replacing
-      --api <API>                  overrides which api to hit [possible values: openai, mistral, groq, anthropic]
+      --api <API>                  overrides which api to hit [possible values: openai, mistral, groq, anthropic, ollama]
   -m, --model <MODEL>              overrides which model (of the api) to use
   -t, --temperature <TEMPERATURE>  temperature higher means answer further from the average
   -l, --char-limit <CHAR_LIMIT>    max number of chars to include, ask for user approval if more, 0 = no limit
@@ -214,7 +216,7 @@ the previous step with `-e -r`.
 - by default lives at `$HOME/.config/smartcat`
 - the directory can be set using the `SMARTCAT_CONFIG_PATH` environement variable
 - use `#[<input>]` as the placeholder for input when writing prompts
-- the default model is `gpt-4` but I recommend trying the latest ones and see which one works best for you;
+- the default model is a local `phi3` ran with ollama but I recommend trying the latest ones and see which one works best for you;
 - you can play with the temperature and set a default for each prompt depending on its use case.
 
 Three files are used:
@@ -226,6 +228,10 @@ which stores the latest chat if you need to continue it.
 `.api_configs.toml`
 
 ```toml
+[ollama]  # local API, no key required
+url = "http://localhost:11434/api/chat"
+default_model = "phi3"
+
 [openai]  # each supported api has their own config section with api and url
 api_key = "<your_api_key>"
 default_model = "gpt-4-turbo-preview"
@@ -252,8 +258,8 @@ version = "2023-06-01"
 
 ```toml
 [default]  # a prompt is a section
-api = "openai"  # must refer to an entry in the `.api_configs.toml` file
-model = "gpt-4-1106-preview"  # each prompt may define its own model
+api = "ollama"  # must refer to an entry in the `.api_configs.toml` file
+model = ""gpt-4-1106-previ3ew  # each prompt may define its own model
 
 [[default.messages]]  # then you can list messages
 role = "system"
@@ -270,10 +276,11 @@ Now let's make something great together!
 
 [empty]  # always nice to have an empty prompt available
 api = "openai"
+model = "gpt-4-turbo"
 messages = []
 
 [write_tests]
-api = "openai"
+api = "anthropic"
 temperature = 0.0
 
 [[write_tests.messages]]
@@ -300,6 +307,16 @@ content ='''Write tests using pytest for the following code. Parametrize it if a
 ```
 
 see [the config setup file](./src/config/mod.rs) for more details.
+
+## Ollama setup
+
+1. [Install Ollama](https://github.com/ollama/ollama)
+2. Pull the model you plan on using `ollama pull phi3`
+3. Test the model `ollama run phi3 "say hi"`
+4. Make sure the serving is available `curl http://localhost:11434` which should say "Ollama is running", else you might need to run `ollama serve`
+5. `smartcat` will now be able to reach your local ollama, enjoy!
+
+⚠️ Answers might be slow depending on your setup, you'll want to try the third party APIs for an optimal workflow.
 
 ## Developping
 

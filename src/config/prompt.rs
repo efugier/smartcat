@@ -20,6 +20,8 @@ pub struct Prompt {
     pub temperature: Option<f32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub char_limit: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stream: Option<bool>,
 }
 
 impl Default for Prompt {
@@ -39,10 +41,11 @@ impl Default for Prompt {
             ")
         ];
         Prompt {
-            api: Api::Openai,
+            api: Api::Ollama,
             model: None,
             temperature: None,
             messages,
+            stream: None,
             char_limit: Some(50000),
         }
     }
@@ -56,6 +59,7 @@ impl Prompt {
             model: default_prompt.model,
             temperature: None,
             messages: vec![],
+            stream: None,
             char_limit: Some(50000),
         }
     }

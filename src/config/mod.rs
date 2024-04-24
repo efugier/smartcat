@@ -2,12 +2,12 @@ pub mod api;
 pub mod prompt;
 
 use self::{
-    api::{api_keys_path, generate_api_keys_file},
-    prompt::{generate_prompts_file, prompts_path},
+    api::{api_keys_path, generate_api_keys_file, get_api_config},
+    prompt::{generate_prompts_file, get_prompts, prompts_path},
 };
-use crate::input_processing::{is_interactive, read_user_input};
+use crate::input_processing::is_interactive;
 
-use std::path::PathBuf;
+use std::{path::PathBuf, process::Command};
 
 pub const PLACEHOLDER_TOKEN: &str = "#[<input>]";
 
@@ -27,9 +27,6 @@ fn resolve_config_path() -> PathBuf {
 }
 
 pub fn ensure_config_files() -> std::io::Result<()> {
-    let mut config_was_generated = false;
-    let mut config_available = true;
-
     let interactive = is_interactive();
 
     if !prompts_path().exists() {
@@ -43,46 +40,55 @@ pub fn ensure_config_files() -> std::io::Result<()> {
     }
 
     if !api_keys_path().exists() {
-        let openai_api_key = if interactive {
-            println!(
-                "API config file not found at {:?}, generating one.\n...",
-                api_keys_path()
-            );
-            println!(
-                "Please paste your openai API key, it can be found at\n\
-                https://platform.openai.com/api-keys\n\
-                Press [ENTER] to skip"
-            );
-            let input = read_user_input().trim().to_string();
-            if input.trim().is_empty() {
-                println!(
-                    "Please edit the file at {:?} more \
-                    config options are available this way. See\n\
-                    https://github.com/efugier/smartcat#configuration",
-                    api_keys_path()
-                );
-                config_available = false;
-                None
-            } else {
-                Some(input)
-            }
-        } else {
-            None
-        };
-        config_was_generated = true;
-        generate_api_keys_file(openai_api_key)?;
-    }
-
-    if interactive & config_was_generated & config_available {
-        println!("All set!");
-        println!("========");
-    } else if interactive & !config_available {
-        println!("Come back when you've set your api keys!");
-        println!("========");
-        std::process::exit(0);
-    }
+        println!(
+            "API config file not found at {:?}, generating one.\n...",
+            api_keys_path()
+        );
+        generate_api_keys_file().expect("Unable to generate config files");
+        if interactive {
+            ensure_config_usable();
+        }
+    };
 
     Ok(())
+}
+
+pub fn ensure_config_usable() {
+    let interactive = is_interactive();
+
+    // check if any config has an API key;
+    let third_parth_config_usable = get_prompts().iter().any(|(_, prompt)| {
+        let api = get_api_config(&prompt.api.to_string());
+        api.api_key.is_some() || api.api_key_command.is_some()
+    });
+
+    // check if local execution is possible with Ollama
+    if interactive && !third_parth_config_usable && !is_executable_in_path("ollama") {
+        println!(
+            "No API key is configured and Ollama is not found in PATH.\n\
+            Install Ollama or set api key for at least one of the providers to get started.\n\
+            \n\
+            How to add API key\n\
+            https://github.com/efugier/smartcat/#configuration\n\
+            \n\
+            How to install Ollama:\n\
+            https://github.com/ollama/ollama?tab=readme-ov-file#ollama
+            Then check it the server is running with\n\
+            > curl http://localhost:11434
+            Which should say \"Ollama is running\""
+        );
+        println!("Come back when you've set up your api keys or Ollama!");
+        println!("========");
+        std::process::exit(1);
+    }
+}
+
+fn is_executable_in_path(executable_name: &str) -> bool {
+    Command::new("which")
+        .arg(executable_name)
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false)
 }
 
 #[cfg(test)]
@@ -165,6 +171,7 @@ mod tests {
 
         assert!(api_keys_path.exists());
         assert!(prompts_path.exists());
+
         Ok(())
     }
 
