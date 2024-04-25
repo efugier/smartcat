@@ -24,11 +24,6 @@ pub fn process_input_with_request<W: Write>(
     output: &mut W,
     repeat_input: bool,
 ) -> Result<Prompt> {
-    // nothing to do if no input
-    if input.is_empty() {
-        return Ok(prompt);
-    }
-
     // insert the input in the messages with placeholders
     for message in prompt.messages.iter_mut() {
         message.content = message.content.replace(PLACEHOLDER_TOKEN, &input)

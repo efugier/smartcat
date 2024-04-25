@@ -17,7 +17,7 @@
 
 # smartcat (sc)
 
-Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow power users to make the most out of llms.
+Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow terminal power users to make the most out of llms.
 
 <p align="center">
   <img src="assets/workflow.gif" />
@@ -38,7 +38,7 @@ What makes it special:
 Currently supports the following APIs:
 
 - Local runs with **[Ollama](https://github.com/ollama/ollama/blob/main/docs/README.md)** or any server compliant with its format, see the [Ollama setup](#ollama-setup) section for the free and easiest way to get started!  
-Answers might be slow depending on your setup, you'll want to try the third party APIs for an optimal workflow.
+Answers might be slow depending on your setup, you may want to try the third party APIs for an optimal workflow.
 - **[OpenAi](https://platform.openai.com/docs/models/overview)**, **[Mistral AI](https://docs.mistral.ai/getting-started/models/)**, **[Anthropic](https://docs.anthropic.com/claude/docs/models-overview)**, **[Groq](https://console.groq.com/docs/models)**.
 
 # Table of Contents
@@ -54,6 +54,11 @@ Answers might be slow depending on your setup, you'll want to try the third part
 
 ## Installation
 
+On the first run (`sc`), it will ask you to generate some default configuration files and give pointers on how to finalize the install (see the [configuration section](#Configuration)).
+
+The minimum config requirement is a `default` prompt calling a setup API (either remote with api key or local with ollama).
+
+Now on how to get it.
 
 ### With Cargo
 
@@ -68,15 +73,6 @@ run this command again to update `smartcat`.
 ### By downloading the binary
 
 Chose the one compiled for your platform on the [release page](https://github.com/efugier/smartcat/releases).
-
-(the binary is named `sc`)
-
----
-
-On the first run, `smartcat` will ask you to generate some default configuration files if it cannot find them.
-More about that in the [configuration section](#Configuration).
-
-A `default` prompt is needed for `smartcat` to know which api and model to hit.
 
 ## Usage
 
@@ -222,7 +218,7 @@ the previous step with `-e -r`.
 
 Three files are used:
 
-- `.api_configs.toml` stores your credentials, you need at least one API with key or a local ollama setup;
+- `.api_configs.toml` stores your credentials, you need at least one provider with API with key or a local ollama setup;
 - `prompts.toml` stores you prompt templates, you need at least the `default` prompt;
 - `conversation.toml` stores the latest chat if you need to continue it, it's automanaged but you can make backups if you want.
 
@@ -276,7 +272,7 @@ Never ever write ``` around the code. \
 
 [empty]  # always nice to have an empty prompt available
 api = "openai"
-model = "gpt-4-turbo"
+# not mentioning the model will use the default from the api config
 messages = []
 
 [write_tests]
@@ -315,7 +311,7 @@ see [the config setup file](./src/config/mod.rs) for more details.
 4. Make sure the serving is available `curl http://localhost:11434` which should say "Ollama is running", else you might need to run `ollama serve`
 5. `smartcat` will now be able to reach your local ollama, enjoy!
 
-⚠️ Answers might be slow depending on your setup, you'll want to try the third party APIs for an optimal workflow.
+⚠️ Answers might be slow depending on your setup, you may want to try the third party APIs for an optimal workflow.
 
 ## Developping
 
@@ -330,3 +326,4 @@ Smartcat has reached an acceptable feature set. The focus is now on upgrading th
 - [ ] make it available on homebrew
 - [ ] handle streams
 - [ ] automagical context fetches (might be out of scope)
+- [ ] add RAG capabilities
