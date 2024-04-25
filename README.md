@@ -217,13 +217,14 @@ the previous step with `-e -r`.
 - the directory can be set using the `SMARTCAT_CONFIG_PATH` environement variable
 - use `#[<input>]` as the placeholder for input when writing prompts
 - the default model is a local `phi3` ran with ollama but I recommend trying the latest ones and see which one works best for you;
-- you can play with the temperature and set a default for each prompt depending on its use case.
+- the prompt named `default` will be the one used by default.
+- you can play with the temperature and set a default for each prompt depending on its use case;
 
 Three files are used:
 
-`conversation.toml`
-
-which stores the latest chat if you need to continue it.
+- `.api_configs.toml` stores your credentials, you need at least one API with key or a local ollama setup;
+- `prompts.toml` stores you prompt templates, you need at least the `default` prompt;
+- `conversation.toml` stores the latest chat if you need to continue it, it's automanaged but you can make backups if you want.
 
 `.api_configs.toml`
 
@@ -259,7 +260,7 @@ version = "2023-06-01"
 ```toml
 [default]  # a prompt is a section
 api = "ollama"  # must refer to an entry in the `.api_configs.toml` file
-model = ""gpt-4-1106-previ3ew  # each prompt may define its own model
+model = "phi3"  # each prompt may define its own model
 
 [[default.messages]]  # then you can list messages
 role = "system"
@@ -271,7 +272,6 @@ as you output will be piped into other programs. Do not write the markdown delim
 Sometimes you will be asked to implement or extend some input code. Same thing goes here, write only what was asked because what you write will \
 be directly added to the user's editor. \
 Never ever write ``` around the code. \
-Now let's make something great together!
 """
 
 [empty]  # always nice to have an empty prompt available
@@ -293,7 +293,6 @@ as you output will be piped into other programs. Do not write the markdown delim
 Sometimes you will be asked to implement or extend some input code. Same thing goes here, write only what was asked because what you write will \
 be directly added to the user's editor. \
 Never ever write ``` around the code. \
-Now let's make something great together!
 """
 
 [[write_tests.messages]]
@@ -329,4 +328,5 @@ Smartcat has reached an acceptable feature set. The focus is now on upgrading th
 #### TODO
 
 - [ ] make it available on homebrew
-- [ ] automagical context fetches
+- [ ] handle streams
+- [ ] automagical context fetches (might be out of scope)
