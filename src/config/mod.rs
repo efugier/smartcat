@@ -61,32 +61,26 @@ pub fn ensure_config_usable() {
         let api = get_api_config(&prompt.api.to_string());
         api.api_key.is_some() || api.api_key_command.is_some()
     });
-
     if !third_parth_config_usable {
         println!(
             "No API key is configured.\n\
-        Install Ollama or set api key for at least one of the providers to get started.\n\
-        \n\
-        How to configure your API keys\n\
-        https://github.com/efugier/smartcat/#configuration\n"
+            How to configure your API keys:\n\
+            https://github.com/efugier/smartcat/#configuration\n"
         );
     }
 
+    // check if local execution is possible with Ollama
     if !is_executable_in_path("ollama") {
         println!(
             "Ollama not found in PATH.\n\
-            Install Ollama or set api key for at least one of the providers to get started.\n\
-            \n\
             How to setup Ollama:\n\
             https://github.com/efugier/smartcat#ollama-setup"
         );
     }
 
-    // check if local execution is possible with Ollama
+    // nothing is setup
     if interactive && !third_parth_config_usable && !is_executable_in_path("ollama") {
-        println!("========");
-        println!("Come back when you've set up your api keys or Ollama!");
-        println!("========");
+        println!("\nInstall Ollama or set an api key for at least one of the providers to get started, then come back!");
         std::process::exit(1);
     }
 }
