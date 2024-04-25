@@ -31,6 +31,7 @@ pub fn make_api_request(api_config: ApiConfig, prompt: &Prompt) -> io::Result<Me
         prompt.model = api_config.default_model.clone()
     }
 
+    // currently not compatible with streams
     prompt.stream = Some(false);
 
     let request = ureq::post(&api_config.url);

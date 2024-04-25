@@ -6,6 +6,7 @@ mod config;
 
 use crate::config::{
     api::Api,
+    ensure_config_usable,
     prompt::{conversation_file_path, get_last_conversation_as_prompt, get_prompts, Prompt},
 };
 use prompt_customization::customize_prompt;
@@ -111,6 +112,7 @@ fn main() {
 
     let is_piped = !stdin.is_terminal();
     let mut custom_prompt: Option<String> = None;
+
     let prompt: Prompt = if args.extend_conversation {
         custom_prompt = args.input_or_config_ref;
         if args.input_if_config_ref.is_some() {
@@ -156,6 +158,7 @@ fn main() {
         }
         Err(e) => {
             eprintln!("Error: {}", e);
+            ensure_config_usable();
             std::process::exit(1);
         }
     }
