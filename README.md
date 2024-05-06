@@ -133,13 +133,13 @@ Start by selecting some text, then press `:`. You can then pipe the selection co
 :'<,'>!sc "fix this function"
 ```
 
-will **replace** the current selection with the same text transformed by the language model.
+will **overwrite** the current selection with the same text transformed by the language model.
 
 ```
-:'<,'>!sc -r write_test
+:'<,'>!sc -r test
 ```
 
-will **append** at the end of the current selection the result of the language model.
+will **repeat** the input, effectively appending at the end of the current selection the result of the language model.
 
 Add the following remap to your vimrc for easy access:
 
@@ -152,7 +152,7 @@ nnoremap <leader>sc :'<,'>!sc
 Same concept, different shortcut, simply press the pipe key to redirect the selection to `smarcat`.
 
 ```
-pipe:sc write_test -r
+pipe:sc test -r
 ```
 With some remapping you may have your most reccurrent action attached to few keystrokes e.g. `<leader>wt`!
 
@@ -275,11 +275,11 @@ api = "openai"
 # not mentioning the model will use the default from the api config
 messages = []
 
-[write_tests]
+[test]
 api = "anthropic"
 temperature = 0.0
 
-[[write_tests.messages]]
+[[test.messages]]
 role = "system"
 content = """\
 You are an extremely skilled programmer with a keen eye for detail and an emphasis on readable code. \
@@ -291,7 +291,7 @@ be directly added to the user's editor. \
 Never ever write ``` around the code. \
 """
 
-[[write_tests.messages]]
+[[test.messages]]
 role = "user"
 # the following placeholder string #[<input>] will be replaced by the input
 # each message seeks it and replaces it
