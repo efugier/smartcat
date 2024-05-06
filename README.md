@@ -17,7 +17,7 @@
 
 # smartcat (sc)
 
-Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow terminal power users to make the most out of llms.
+Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow terminal power users to make the most out of llms while keeping full control.
 
 <p align="center">
   <img src="assets/workflow.gif" />
@@ -50,7 +50,7 @@ Answers might be slow depending on your setup, you may want to try the third par
     - [Example workflows](#example-workflows)
 - [Configuration](#configuration) ← please read this carefully
     - [Ollama setup](#ollama-setup) ← easiest way to get running for free
-- [Developping](#developping)
+- [How to help?](./CONTRIBUTING.md)
 
 ## Installation
 
@@ -313,17 +313,6 @@ see [the config setup file](./src/config/mod.rs) for more details.
 
 ⚠️ Answers might be slow depending on your setup, you may want to try the third party APIs for an optimal workflow.
 
-## Developping
+## How to help?
 
-Some tests rely on environement variables and don't behave well with multi-threading. They are marked with `#[serial]` from the [serial_test](https://docs.rs/serial_test/latest/serial_test/index.html) crate.
-
-### State of the project
-
-Smartcat has reached an acceptable feature set. The focus is now on upgrading the codebase quality as I hadn't really touched rust since 2019 and it shows.
-
-#### TODO
-
-- [ ] make it available on homebrew
-- [ ] handle streams
-- [ ] automagical context fetches (might be out of scope)
-- [ ] add RAG capabilities
+See [CONTRIBUTING.md](./CONTRIBUTING.MD)
