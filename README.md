@@ -305,7 +305,7 @@ see [the config setup file](./src/config/mod.rs) for more details.
 
 ## Ollama setup
 
-1. [Install Ollama](https://github.com/ollama/ollama)
+1. [Install Ollama](https://github.com/ollama/ollama#ollama)
 2. Pull the model you plan on using `ollama pull phi3`
 3. Test the model `ollama run phi3 "say hi"`
 4. Make sure the serving is available `curl http://localhost:11434` which should say "Ollama is running", else you might need to run `ollama serve`
