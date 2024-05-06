@@ -24,13 +24,13 @@ src/
 │   ├── api.rs
 │   │   # config structs for prompt defition (messages, model, temperature...)
 │   └── prompt.rs
-│   # third-party related code (request, adapters)
+│   # third-party-related code (request, adapters)
 └── third_party
-    │   # make third party requests
+    │   # make third party requests and read the result
     ├── mod.rs
     │   # logic to adapt smartcat prompts to third party ones
     ├── prompt_adapters.rs
-    │   # logic to parse and extract the message from third party answers
+    │   # structs to parse and extract the message from third party answers
     └── response_parsing.rs
 ```
 
