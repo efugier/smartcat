@@ -24,7 +24,7 @@ src/
 │   ├── api.rs
 │   │   # config structs for prompt defition (messages, model, temperature...)
 │   └── prompt.rs
-│   # third-party related code
+│   # third-party related code (request, adapters)
 └── third_party
     │   # make third party requests
     ├── mod.rs
@@ -36,7 +36,7 @@ src/
 
 #### Logic flow:
 
-The prompt object is passed through the entire program, enriched with the input (from stdin) and then the response. The response is them written stdout and the whole thing is saved a the last prompt for re-use.
+The prompt object is passed through the entire program, enriched with the input (from stdin) and then the third party response. The third party response is then written stdout and the whole conversation (including the input and the response) is then saved as the last prompt for re-use.
 
 ```python
 main 
@@ -67,3 +67,4 @@ Some tests rely on environement variables and don't behave well with multi-threa
 - [ ] handle streams
 - [ ] automagical context fetches (might be out of scope)
 - [ ] add RAG capabilities (might be out of scope)
+- [ ] refactor to remove content logic from the `mod.rs` files
