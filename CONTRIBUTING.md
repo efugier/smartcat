@@ -40,18 +40,21 @@ The prompt object is passed through the entire program, enriched with the input 
 
 ```python
 main 
-  # parse the args and get the template prompt / continue with last conversation as prompt
-  -> prompt_customization::customize_prompt 
-     # update the templated prompt with the information from the args
-  -> input_processing::process_input_with_request
-     # insert the input in the prompt
-     # load the api config
-     -> third_party::make_api_request
-        # translate the smartcat prompt to api-specific prompt
-        # make the request
-        # get the message from api-specific response
-     # add response message to the prompt
-     # write the response message to stdout
+# parse the args and get the template prompt / continue with last conversation as prompt
+-> prompt_customization::customize_prompt
+ ╎# update the templated prompt with the information from the args
+<-
+-> input_processing::process_input_with_request
+ ╎# insert the input in the prompt
+ ╎# load the api config
+  -> third_party::make_api_request
+    ╎# translate the smartcat prompt to api-specific prompt
+    ╎# make the request
+    ╎# get the message from api-specific response
+  <-
+ ╎# add response message to the prompt
+ ╎# write the response message to stdout
+<-
 # save the enriched prompt as last conversation
 # exit
 ```
