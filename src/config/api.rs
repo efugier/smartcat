@@ -164,11 +164,13 @@ pub(super) fn generate_api_keys_file() -> std::io::Result<()> {
 
     let mut config_file = fs::File::create(api_keys_path())?;
 
-    let doc = "\
+    {
+        let api_key_doc = "\
         # Api config files, use `api_key` or `api_key_command` fields\n\
         # to set the api key for each api\n\
         # more details at https://github.com/efugier/smartcat#configuration\n\n";
-    config_file.write_all(doc.as_bytes())?;
+        config_file.write_all(api_key_doc.as_bytes())?;
+    }
 
     let api_config_str = toml::to_string_pretty(&api_config)
         .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;

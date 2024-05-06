@@ -12,6 +12,7 @@ use crate::config::{
 use prompt_customization::customize_prompt;
 
 use clap::{Args, Parser};
+use input_processing::process_input_with_request;
 use log::debug;
 use std::fs;
 use std::io::{self, IsTerminal, Read, Write};
@@ -81,18 +82,15 @@ fn main() {
 
     let stdin = io::stdin();
     let mut output = io::stdout();
+    let mut input = String::new();
 
     // case for testing
-    // TODO: mock API and actually the real processing
+    // TODO: mock API and actually use the real processing
     if std::env::var("SMARTCAT_TEST").unwrap_or_default() == "1" {
-        let prefix = String::from("Hello, World!\n```\n");
-        let suffix = String::from("\n```\n");
-        let mut input = String::new();
-
         if let Err(e) = stdin
             .lock()
             .read_to_string(&mut input)
-            .and(output.write_all(format!("{}{}{}", prefix, input, suffix).as_bytes()))
+            .and(output.write_all(format!("Hello, World!\n```\n{}\n```\n", input).as_bytes()))
         {
             eprintln!("Error: {}", e);
             std::process::exit(1);
@@ -107,8 +105,6 @@ fn main() {
 
     config::ensure_config_files()
         .expect("Unable to verify that the config files exist or to generate new ones.");
-
-    let mut input = String::new();
 
     let is_piped = !stdin.is_terminal();
     let mut custom_prompt: Option<String> = None;
@@ -143,18 +139,14 @@ fn main() {
 
     debug!("{:?}", prompt);
 
-    match input_processing::process_input_with_request(
-        prompt,
-        input,
-        &mut output,
-        args.repeat_input,
-    ) {
+    match process_input_with_request(prompt, input, &mut output, args.repeat_input) {
         Ok(prompt) => {
-            let toml_string = toml::to_string(&prompt).expect("Failed to serialize prompt");
+            let toml_string =
+                toml::to_string(&prompt).expect("Failed to serialize prompt after response.");
             let mut file = fs::File::create(conversation_file_path())
-                .expect("Failed to the conversation save file");
+                .expect("Failed to create the conversation save file.");
             file.write_all(toml_string.as_bytes())
-                .expect("Failed to write to file");
+                .expect("Failed to write to the conversation file.");
         }
         Err(e) => {
             eprintln!("Error: {}", e);

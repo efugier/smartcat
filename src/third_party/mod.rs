@@ -2,7 +2,7 @@ mod prompt_adapters;
 mod response_parsing;
 
 use self::prompt_adapters::{AnthropicPrompt, OpenAiPrompt};
-use self::response_parsing::{parse_response, AnthropicResponse, OpenAiResponse};
+use self::response_parsing::{AnthropicResponse, OpenAiResponse};
 use crate::input_processing::is_interactive;
 use crate::third_party::response_parsing::OllamaResponse;
 use crate::{
@@ -39,7 +39,7 @@ pub fn make_api_request(api_config: ApiConfig, prompt: &Prompt) -> io::Result<Me
         Api::Ollama => {
             let request = request.set("Content-Type", "application/json");
             let response: OllamaResponse =
-                parse_response(request.send_json(OpenAiPrompt::from(prompt)))?.into_json()?;
+                read_response(request.send_json(OpenAiPrompt::from(prompt)))?.into_json()?;
             response.into()
         }
         Api::Openai | Api::Mistral | Api::Groq => {
@@ -48,7 +48,7 @@ pub fn make_api_request(api_config: ApiConfig, prompt: &Prompt) -> io::Result<Me
                 &format!("Bearer {}", &api_config.get_api_key()),
             );
             let response: OpenAiResponse =
-                parse_response(request.send_json(OpenAiPrompt::from(prompt)))?.into_json()?;
+                read_response(request.send_json(OpenAiPrompt::from(prompt)))?.into_json()?;
             response.into()
         }
         Api::Anthropic => {
@@ -62,13 +62,28 @@ pub fn make_api_request(api_config: ApiConfig, prompt: &Prompt) -> io::Result<Me
                     ),
                 );
             let response: AnthropicResponse =
-                parse_response(request.send_json(AnthropicPrompt::from(prompt)))?.into_json()?;
+                read_response(request.send_json(AnthropicPrompt::from(prompt)))?.into_json()?;
             response.into()
         }
         Api::AnotherApiForTests => panic!("This api is not made for actual use."),
     };
 
     Ok(Message::assistant(&response_text))
+}
+
+fn read_response(response: Result<ureq::Response, ureq::Error>) -> io::Result<ureq::Response> {
+    response.map_err(|e| match e {
+        ureq::Error::Status(status, response) => {
+            let content = match response.into_string() {
+                Ok(content) => content,
+                Err(_) => "(non-UTF-8 response)".to_owned(),
+            };
+            io::Error::other(format!(
+                "API call failed with status code {status} and body: {content}"
+            ))
+        }
+        ureq::Error::Transport(transport) => io::Error::other(transport),
+    })
 }
 
 fn validate_prompt_size(prompt: &Prompt) {

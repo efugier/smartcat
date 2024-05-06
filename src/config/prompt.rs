@@ -21,7 +21,7 @@ pub struct Prompt {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub char_limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub stream: Option<bool>,
+    pub stream: Option<bool>, // unsuported for now
 }
 
 impl Default for Prompt {
