@@ -34,7 +34,7 @@ src/
     └── response_parsing.rs
 ```
 
-#### Logic flow:
+#### Logic flow
 
 The prompt object is passed through the entire program, enriched with the input (from stdin) and then the third party response. The third party response is then written stdout and the whole conversation (including the input and the response) is then saved as the last prompt for re-use.
 
