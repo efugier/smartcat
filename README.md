@@ -211,7 +211,7 @@ the previous step with `-e -r`.
 
 - by default lives at `$HOME/.config/smartcat`
 - the directory can be set using the `SMARTCAT_CONFIG_PATH` environement variable
-- use `#[<input>]` as the placeholder for input when writing prompts
+- use `#[<input>]` as the placeholder for input when writing prompts, if none is provided, it will be automatically added at the end of the last user message
 - the default model is a local `phi3` ran with ollama but I recommend trying the latest ones and see which one works best for you;
 - the prompt named `default` will be the one used by default.
 - you can play with the temperature and set a default for each prompt depending on its use case;
