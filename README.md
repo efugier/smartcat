@@ -315,4 +315,4 @@ see [the config setup file](./src/config/mod.rs) for more details.
 
 ## How to help?
 
-See [CONTRIBUTING.md](./CONTRIBUTING.MD)
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
