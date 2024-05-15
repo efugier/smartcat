@@ -10,6 +10,7 @@ use crate::config::{api::Api, resolve_config_path};
 
 const PROMPT_FILE: &str = "prompts.toml";
 const CONVERSATION_FILE: &str = "conversation.toml";
+const AUDIO_FILE: &str = "audio.wav";
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 pub struct Prompt {
@@ -98,6 +99,10 @@ pub(super) fn prompts_path() -> PathBuf {
 
 pub fn conversation_file_path() -> PathBuf {
     resolve_config_path().join(CONVERSATION_FILE)
+}
+
+pub fn audio_file_path() -> PathBuf {
+    resolve_config_path().join(AUDIO_FILE)
 }
 
 pub fn get_last_conversation_as_prompt() -> Prompt {

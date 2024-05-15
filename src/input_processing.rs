@@ -31,9 +31,13 @@ pub fn process_input_with_request<W: Write>(
     // fetch the api config tied to the prompt
     let api_config = get_api_config(&prompt.api.to_string());
 
-    // make the request
-    let response_message = make_api_request(api_config, &prompt)?;
-
+    let response_message = match make_api_request(api_config, &prompt) {
+        Ok(message) => message,
+        Err(e) => {
+            eprintln!("Failed to make API request: {:?}", e);
+            std::process::exit(1);
+        }
+    };
     debug!("{}", &response_message.content);
 
     prompt.messages.push(response_message.clone());
