@@ -16,7 +16,7 @@ on:
   push:
     # Enable when testing release infrastructure on a branch.
     # branches:
-    # - ag/work
+    # - fix/release-ci-after-voice
     tags:
     - "[0-9]+.[0-9]+.[0-9]+"
     - "[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+"
@@ -47,17 +47,17 @@ jobs:
         fail-fast: false
         matrix:
           job:
-            - { target: aarch64-unknown-linux-gnu   , os: ubuntu-20.04, use-cross: true }
-            - { target: arm-unknown-linux-gnueabihf , os: ubuntu-20.04, use-cross: true }
-            - { target: arm-unknown-linux-musleabihf, os: ubuntu-20.04, use-cross: true }
-            - { target: i686-pc-windows-msvc        , os: windows-2019                  }
-            - { target: i686-unknown-linux-gnu      , os: ubuntu-20.04, use-cross: true }
-            - { target: i686-unknown-linux-musl     , os: ubuntu-20.04, use-cross: true }
-            - { target: x86_64-apple-darwin         , os: macos-12                      }
-            - { target: x86_64-pc-windows-gnu       , os: windows-2019                  }
-            - { target: x86_64-pc-windows-msvc      , os: windows-2019                  }
-            - { target: x86_64-unknown-linux-gnu    , os: ubuntu-20.04, use-cross: true }
-            - { target: x86_64-unknown-linux-musl   , os: ubuntu-20.04, use-cross: true }
+            # - { target: aarch64-unknown-linux-gnu   , os: ubuntu-20.04 }
+            # - { target: arm-unknown-linux-gnueabihf , os: ubuntu-20.04 }
+            # - { target: arm-unknown-linux-musleabihf, os: ubuntu-20.04 }
+            - { target: i686-pc-windows-msvc        , os: windows-2019 }
+            # - { target: i686-unknown-linux-gnu      , os: ubuntu-20.04 }
+            # - { target: i686-unknown-linux-musl     , os: ubuntu-20.04 }
+            - { target: x86_64-apple-darwin         , os: macos-12     }
+            - { target: x86_64-pc-windows-gnu       , os: windows-2019 }
+            - { target: x86_64-pc-windows-msvc      , os: windows-2019 }
+            - { target: x86_64-unknown-linux-gnu    , os: ubuntu-20.04 }
+            # - { target: x86_64-unknown-linux-musl   , os: ubuntu-20.04 }
       env:
         BUILD_CMD: cargo
       steps:
@@ -76,17 +76,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.job.target }}
-
-      - name: Install cross
-        if: matrix.job.use-cross
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cross
-
-      - name: Overwrite build command env variable
-        if: matrix.job.use-cross
-        shell: bash
-        run: echo "BUILD_CMD=cross" >> $GITHUB_ENV
 
       - name: Show version information (Rust, cargo, GCC)
         shell: bash
