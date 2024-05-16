@@ -19,6 +19,7 @@ on:
     # - ag/work
     tags:
     - "[0-9]+.[0-9]+.[0-9]+"
+    - "[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+"
 jobs:
   get-release:
     name: get-release
