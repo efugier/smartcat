@@ -12,31 +12,46 @@ Codebase quality improvement are very welcome as I hadn't really used rust since
 src/
 │   # args parsing logic
 ├── main.rs
+│   # a (manageable) handful of utility functions used in serveral other places
+├── utils.rs
 │   # logic to customize the template prompt with the args
 ├── prompt_customization.rs
 │   # logic to insert the input into the prompt
-├── input_processing.rs
-│   # smartcat-related config structs
 ├── config
 │   │   # function to check config
 │   ├── mod.rs
-│   │   # config structs for API definition (url, key...)
+│   │   # config structs for API config definition (url, key...)
 │   ├── api.rs
 │   │   # config structs for prompt defition (messages, model, temperature...)
-│   └── prompt.rs
-│   # third-party-related code (request, adapters)
-└── third_party
+│   ├── prompt.rs
+│   │   # config structs for voice config (model, url, voice recording command...)
+│   └── voice.rs
+│   # voice api related code (request, adapters)
+├── voice
+│   │   # orchestrate the voice recording and request
+│   ├── mod.rs
+│   │   # start and stop the recording program
+│   ├── recording.rs
+│   │   # make the request to the api and read the result
+│   ├── api_call.rs
+│   │   # structs to parse and extract the message from third party answers
+│   └── response_schemas.rs
+└── text
     │   # make third party requests and read the result
     ├── mod.rs
+    │   # make the request to the api and read the result
+    ├── api_call.rs
     │   # logic to adapt smartcat prompts to third party ones
-    ├── prompt_adapters.rs
+    ├── request_schemas.rs
     │   # structs to parse and extract the message from third party answers
-    └── response_parsing.rs
+    └── response_schemas.rs
 ```
 
 #### Logic flow
 
 The prompt object is passed through the entire program, enriched with the input (from stdin) and then the third party response. The third party response is then written stdout and the whole conversation (including the input and the response) is then saved as the last prompt for re-use.
+
+**Regular**
 
 ```python
 main 
@@ -44,10 +59,10 @@ main
 -> prompt_customization::customize_prompt
  ╎# update the templated prompt with the information from the args
 <-
--> input_processing::process_input_with_request
+-> text::process_input_with_request
  ╎# insert the input in the prompt
  ╎# load the api config
-  -> third_party::make_api_request
+  -> text::api_call::post_prompt_and_get_answer
     ╎# translate the smartcat prompt to api-specific prompt
     ╎# make the request
     ╎# get the message from api-specific response
@@ -59,10 +74,29 @@ main
 # exit
 ```
 
+**Voice**
+
+```python
+main 
+-> prompt_customization::customize_prompt
+-> voice::record_voice_and_get_transcript
+   -> voice::recording::start_recording
+   -> voice::recording::strop_recording
+   -> voice::api_call::post_audio_and_get_transcript
+<-
+-> text::process_input_with_request
+  -> text::api_call::post_prompt_and_get_answer
+<-
+```
+
 ### Testing
 
 Some tests rely on environement variables and don't behave well with multi-threading. They are marked with `#[serial]` from the [serial_test](https://docs.rs/serial_test/latest/serial_test/index.html) crate.
 
+
+### DOING
+
+- Voice intergation
 
 ### TODO
 
@@ -70,4 +104,3 @@ Some tests rely on environement variables and don't behave well with multi-threa
 - [ ] handle streams
 - [ ] automagical context fetches (might be out of scope)
 - [ ] add RAG capabilities (might be out of scope)
-- [ ] refactor to remove content logic from the `mod.rs` files
