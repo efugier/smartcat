@@ -1,16 +1,11 @@
-mod prompt_adapters;
-mod response_parsing;
+use super::request_schemas::{AnthropicPrompt, OpenAiPrompt};
+use super::response_schemas::{AnthropicResponse, OllamaResponse, OpenAiResponse};
 
-use self::prompt_adapters::{AnthropicPrompt, OpenAiPrompt};
-use self::response_parsing::{AnthropicResponse, OllamaResponse, OpenAiResponse};
-use crate::input_processing::is_interactive;
-use crate::{
-    config::{
-        api::{Api, ApiConfig},
-        prompt::{Message, Prompt},
-    },
-    input_processing::read_user_input,
+use crate::config::{
+    api::{Api, ApiConfig},
+    prompt::{Message, Prompt},
 };
+use crate::utils::handle_api_response;
 
 use log::debug;
 
@@ -23,13 +18,15 @@ enum PromptFormat {
     Anthropic(AnthropicPrompt),
 }
 
-pub fn make_api_request(api_config: ApiConfig, prompt: &Prompt) -> reqwest::Result<Message> {
+pub fn post_prompt_and_get_answer(
+    api_config: ApiConfig,
+    prompt: &Prompt,
+) -> reqwest::Result<Message> {
     debug!(
         "Trying to reach {:?} with key {:?}",
         api_config.url, api_config.api_key
     );
     debug!("Prompt: {:?}", prompt);
-    validate_prompt_size(prompt);
 
     let mut prompt = prompt.clone();
 
@@ -81,48 +78,4 @@ pub fn make_api_request(api_config: ApiConfig, prompt: &Prompt) -> reqwest::Resu
         Api::AnotherApiForTests => unreachable!(),
     };
     Ok(Message::assistant(&response_text))
-}
-
-/// clean error management
-pub fn handle_api_response<T: serde::de::DeserializeOwned + Into<String>>(
-    response: reqwest::blocking::Response,
-) -> String {
-    let status = response.status();
-    if response.status().is_success() {
-        response.json::<T>().unwrap().into()
-    } else {
-        let error_text = response.text().unwrap();
-        panic!("API request failed with status {}: {}", status, error_text);
-    }
-}
-
-fn validate_prompt_size(prompt: &Prompt) {
-    let char_limit = prompt.char_limit.unwrap_or_default();
-    let number_of_chars: u32 = prompt
-        .messages
-        .iter()
-        .map(|message| message.content.len() as u32)
-        .sum();
-
-    debug!("Number of chars is prompt: {}", number_of_chars);
-
-    if char_limit > 0 && number_of_chars > char_limit {
-        if is_interactive() {
-            println!(
-                "The number of chars in the input {} is greater than the set limit {}\n\
-                Do you want to continue? High costs may ensue.\n[Y/n]",
-                number_of_chars, char_limit,
-            );
-            let input = read_user_input();
-            if input.trim() != "Y" {
-                println!("exiting...");
-                std::process::exit(0);
-            }
-        } else {
-            panic!(
-                "Input {} larger than limit {} in non-interactive mode. Exiting.",
-                number_of_chars, char_limit
-            );
-        }
-    }
 }

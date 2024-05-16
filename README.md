@@ -45,6 +45,7 @@ Answers might be slow depending on your setup, you may want to try the third par
 
 - [Installation](#installation-)
 - [Usage](#usage)
+- [Voice](#voice)
 - [A few examples to get started 🐈‍⬛](#a-few-examples-to-get-started-)
   - [Integrating with editors](#integrating-with-editors)
     - [Example workflows](#example-workflows)
@@ -59,6 +60,16 @@ On the first run (`sc`), it will ask you to generate some default configuration 
 The minimum config requirement is a `default` prompt calling a setup API (either remote with api key or local with ollama).
 
 Now on how to get it.
+
+### To use voice input
+
+**Only test on linux so far.** Any help is appreciated from the other platforms users.
+
+- On linux, make sure `arecord` is installed and `arecord --quiet audio.wav` record your audio until you ctrl-c it and produces no output to stdout.
+- On Mac, make sure `sox` is installed and `sox -t waveaudio 0 audio.wav ` record your audio until you ctrl-c it and produces no output to stdout.
+- On Windows, make sure `sox` is installed and `sox -t waveaudio 0 audio.wav` record your audio until you ctrl-c it and produces no output to stdout.
+
+If it doesn't work, please open an issue.
 
 ### With Cargo
 
@@ -77,16 +88,17 @@ Chose the one compiled for your platform on the [release page](https://github.co
 ## Usage
 
 ```text
-Usage: sc [OPTIONS] [INPUT_OR_CONFIG_REF] [INPUT_IF_CONFIG_REF]
+Usage: sc [OPTIONS] [INPUT_OR_TEMPLATE_REF] [INPUT_IF_TEMPLATE_REF]
 
 Arguments:
-  [INPUT_OR_CONFIG_REF]  ref to a prompt from config or straight input (will use `default` prompt template)
-  [INPUT_IF_CONFIG_REF]  if the first arg matches a config ref, the second will be used as input
+  [INPUT_OR_TEMPLATE_REF]  ref to a prompt template from config or straight input (will use `default` prompt template if input)
+  [INPUT_IF_TEMPLATE_REF]  if the first arg matches a config template, the second will be used as input
 
 Options:
   -e, --extend-conversation        whether to extend the previous conversation or start a new one
   -r, --repeat-input               whether to repeat the input before the output, useful to extend instead of replacing
-      --api <API>                  overrides which api to hit [possible values: openai, mistral, groq, anthropic, ollama]
+  -v, --voice                      whether to use voice for input
+      --api <API>                  overrides which api to hit [possible values: another-api-for-tests, ollama, anthropic, groq, mistral, openai]
   -m, --model <MODEL>              overrides which model (of the api) to use
   -t, --temperature <TEMPERATURE>  temperature higher means answer further from the average
   -l, --char-limit <CHAR_LIMIT>    max number of chars to include, ask for user approval if more, 0 = no limit
@@ -100,10 +112,43 @@ You can use it to **accomplish tasks in the CLI** but **also in your editors** (
 
 The key to make this work seamlessly is a good default prompt that tells the model to behave like a CLI tool an not write any unwanted text like markdown formatting or explanations.
 
+# Voice
+
+⚠️ **Testing in progress** I only have a linux system and wasn't able to test the recording commands for other OS. The good news is you can make up your own that works and then plug it in the config.
+
+Use the `-v` flag to ask for voice input then press space to end it. It will replace the prompt customization arg.
+
+- uses openai whisper
+- make sure your `recording_command` field works in your termimal command, it should create a wav file
+- requires you to have an openai key in your `.api_keys.toml`
+- you can still use any prompt template or text model to get your output
+
+```
+sc -v
+
+sc test -v
+
+sc test -v -c src/**/*
+```
+
+## How does it work?
+
+`smartcat` call an external program that handles the voice recording and instructs it to save the result in a wav file. It then listens to keyboard inputs and stops the recording when space is pressed.
+
+The recording is then sent to a speech to text model, the resulting transcript is finally added to the prompt and sent to the text model to get an answer.
+
+On linux:
+On Mac:
+On windows:
+
+To debug, you can check the `conversation.toml` file or listen to the `audio.wav` in the smart config home and see what the model heard and transcripted.
+
 ## A few examples to get started 🐈‍⬛
 
 ```
-sc "say hi"  # just ask
+sc "say hi"  # just ask (uses default prompt template)
+
+sc -v  # use your voice to ask (then press <space> to stop the recording)
 
 sc test                         # use templated prompts
 sc test "and parametrize them"  # extend them on the fly
@@ -299,6 +344,14 @@ content ='''Write tests using pytest for the following code. Parametrize it if a
 
 #[<input>]
 '''
+```
+
+```toml
+url = "https://api.openai.com/v1/audio/transcriptions"
+# make sure this command fit you OS and works on its own
+recording_command = "arecord -f S16_LE --quiet <audio_file_path_placeholder>"
+model = "whisper-1"
+api = "openai"
 ```
 
 see [the config setup file](./src/config/mod.rs) for more details.

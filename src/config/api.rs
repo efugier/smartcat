@@ -7,7 +7,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use crate::config::{prompt::Prompt, resolve_config_path};
+use super::{prompt::Prompt, resolve_config_path};
 
 const API_KEYS_FILE: &str = ".api_configs.toml";
 

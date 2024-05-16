@@ -1,23 +1,15 @@
+mod api_call;
+mod request_schemas;
+mod response_schemas;
+
 use log::debug;
 use std::io::{Result, Write};
 
+use self::api_call::post_prompt_and_get_answer;
 use crate::config::{api::get_api_config, prompt::Prompt, PLACEHOLDER_TOKEN};
-use crate::third_party::make_api_request;
+use crate::utils::{is_interactive, read_user_input};
 
-pub const IS_NONINTERACTIVE_ENV_VAR: &str = "SMARTCAT_NONINTERACTIVE";
-
-pub fn is_interactive() -> bool {
-    std::env::var(IS_NONINTERACTIVE_ENV_VAR).unwrap_or_default() != "1"
-}
-
-pub fn read_user_input() -> String {
-    let mut user_input = String::new();
-    std::io::stdin()
-        .read_line(&mut user_input)
-        .expect("Failed to read line");
-    user_input.trim().to_string()
-}
-
+/// insert the input in the prompt, validate the length and make the request
 pub fn process_input_with_request<W: Write>(
     mut prompt: Prompt,
     mut input: String,
@@ -31,7 +23,8 @@ pub fn process_input_with_request<W: Write>(
     // fetch the api config tied to the prompt
     let api_config = get_api_config(&prompt.api.to_string());
 
-    let response_message = match make_api_request(api_config, &prompt) {
+    validate_prompt_size(&prompt);
+    let response_message = match post_prompt_and_get_answer(api_config, &prompt) {
         Ok(message) => message,
         Err(e) => {
             eprintln!("Failed to make API request: {:?}", e);
@@ -50,6 +43,37 @@ pub fn process_input_with_request<W: Write>(
     output.write_all(response_message.content.as_bytes())?;
 
     Ok(prompt)
+}
+
+fn validate_prompt_size(prompt: &Prompt) {
+    let char_limit = prompt.char_limit.unwrap_or_default();
+    let number_of_chars: u32 = prompt
+        .messages
+        .iter()
+        .map(|message| message.content.len() as u32)
+        .sum();
+
+    debug!("Number of chars is prompt: {}", number_of_chars);
+
+    if char_limit > 0 && number_of_chars > char_limit {
+        if is_interactive() {
+            println!(
+                "The number of chars in the input {} is greater than the set limit {}\n\
+                Do you want to continue? High costs may ensue.\n[Y/n]",
+                number_of_chars, char_limit,
+            );
+            let input = read_user_input();
+            if input.trim() != "Y" {
+                println!("exiting...");
+                std::process::exit(0);
+            }
+        } else {
+            panic!(
+                "Input {} larger than limit {} in non-interactive mode. Exiting.",
+                number_of_chars, char_limit
+            );
+        }
+    }
 }
 
 #[cfg(test)]
