@@ -37,7 +37,10 @@ pub fn post_prompt_and_get_answer(
     // currently not compatible with streams
     prompt.stream = Some(false);
 
-    let client = reqwest::blocking::Client::new();
+    let client = reqwest::blocking::Client::builder()
+        .timeout(api_config.get_timeout())
+        .build()
+        .expect("Unable to initialize HTTP client");
 
     let prompt_format = match prompt.api {
         Api::Ollama | Api::Openai | Api::Mistral | Api::Groq => {
