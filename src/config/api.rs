@@ -97,10 +97,12 @@ impl ApiConfig {
     }
 
     pub fn get_timeout(&self) -> Option<Duration> {
-        match self.timeout {
-            Some(t) if t > 0 => Some(Duration::from_secs(t.into())),
-            _ => None,
-        }
+        let seconds = match self.timeout {
+            Some(t) if t > 0 => Some(t),
+            Some(0) => None,
+            _ => Some(30),
+        };
+        seconds.map(|t| Duration::from_secs(t.into()))
     }
 
     pub(super) fn ollama() -> Self {
