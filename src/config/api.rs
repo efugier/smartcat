@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::default::Default;
 use std::fmt::Debug;
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::{collections::HashMap, time::Duration};
 
 use super::{prompt::Prompt, resolve_config_path};
 
@@ -64,6 +64,8 @@ pub struct ApiConfig {
     pub default_model: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timeout: Option<u16>,
 }
 
 impl Default for ApiConfig {
@@ -94,6 +96,13 @@ impl ApiConfig {
             .unwrap_or_default()
     }
 
+    pub fn get_timeout(&self) -> Option<Duration> {
+        match self.timeout {
+            Some(t) if t > 0 => Some(Duration::from_secs(t.into())),
+            _ => None,
+        }
+    }
+
     pub(super) fn ollama() -> Self {
         ApiConfig {
             api_key_command: None,
@@ -101,6 +110,7 @@ impl ApiConfig {
             url: String::from("http://localhost:11434/api/chat"),
             default_model: Some(String::from("phi3")),
             version: None,
+            timeout: None,
         }
     }
 
@@ -111,6 +121,7 @@ impl ApiConfig {
             url: String::from("https://api.openai.com/v1/chat/completions"),
             default_model: Some(String::from("gpt-4")),
             version: None,
+            timeout: None,
         }
     }
 
@@ -121,6 +132,7 @@ impl ApiConfig {
             url: String::from("https://api.mistral.ai/v1/chat/completions"),
             default_model: Some(String::from("mistral-medium")),
             version: None,
+            timeout: None,
         }
     }
 
@@ -131,6 +143,7 @@ impl ApiConfig {
             url: String::from("https://api.groq.com/openai/v1/chat/completions"),
             default_model: Some(String::from("llama3-70b-8192")),
             version: None,
+            timeout: None,
         }
     }
 
@@ -141,6 +154,7 @@ impl ApiConfig {
             url: String::from("https://api.anthropic.com/v1/messages"),
             default_model: Some(String::from("claude-3-opus-20240229")),
             version: Some(String::from("2023-06-01")),
+            timeout: None,
         }
     }
 }
