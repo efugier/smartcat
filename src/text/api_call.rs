@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use super::request_schemas::{AnthropicPrompt, OpenAiPrompt};
 use super::response_schemas::{AnthropicResponse, OllamaResponse, OpenAiResponse};
 
@@ -38,7 +40,11 @@ pub fn post_prompt_and_get_answer(
     prompt.stream = Some(false);
 
     let client = reqwest::blocking::Client::builder()
-        .timeout(api_config.get_timeout())
+        .timeout(
+            api_config
+                .timeout_seconds
+                .map(|t| Duration::from_secs(t.into())),
+        )
         .build()
         .expect("Unable to initialize HTTP client");
 
