@@ -64,10 +64,12 @@ pub struct ApiConfig {
     pub default_model: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timeout_seconds: Option<u16>,
 }
 
 impl Default for ApiConfig {
-    // default to openai
+    // default to ollama
     fn default() -> Self {
         ApiConfig::ollama()
     }
@@ -101,6 +103,7 @@ impl ApiConfig {
             url: String::from("http://localhost:11434/api/chat"),
             default_model: Some(String::from("phi3")),
             version: None,
+            timeout_seconds: Some(30),
         }
     }
 
@@ -111,6 +114,7 @@ impl ApiConfig {
             url: String::from("https://api.openai.com/v1/chat/completions"),
             default_model: Some(String::from("gpt-4")),
             version: None,
+            timeout_seconds: Some(30),
         }
     }
 
@@ -121,6 +125,7 @@ impl ApiConfig {
             url: String::from("https://api.mistral.ai/v1/chat/completions"),
             default_model: Some(String::from("mistral-medium")),
             version: None,
+            timeout_seconds: Some(30),
         }
     }
 
@@ -131,6 +136,7 @@ impl ApiConfig {
             url: String::from("https://api.groq.com/openai/v1/chat/completions"),
             default_model: Some(String::from("llama3-70b-8192")),
             version: None,
+            timeout_seconds: Some(30),
         }
     }
 
@@ -141,6 +147,7 @@ impl ApiConfig {
             url: String::from("https://api.anthropic.com/v1/messages"),
             default_model: Some(String::from("claude-3-opus-20240229")),
             version: Some(String::from("2023-06-01")),
+            timeout_seconds: Some(30),
         }
     }
 }
@@ -151,7 +158,7 @@ pub(super) fn api_keys_path() -> PathBuf {
 
 pub(super) fn generate_api_keys_file() -> std::io::Result<()> {
     let mut api_config = HashMap::new();
-    api_config.insert(Api::Ollama.to_string(), ApiConfig::openai());
+    api_config.insert(Api::Ollama.to_string(), ApiConfig::ollama());
     api_config.insert(Api::Openai.to_string(), ApiConfig::openai());
     api_config.insert(Api::Mistral.to_string(), ApiConfig::mistral());
     api_config.insert(Api::Groq.to_string(), ApiConfig::groq());
