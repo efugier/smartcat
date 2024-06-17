@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::default::Default;
 use std::fmt::Debug;
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
-use std::{collections::HashMap, time::Duration};
 
 use super::{prompt::Prompt, resolve_config_path};
 
@@ -65,11 +65,11 @@ pub struct ApiConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub timeout: Option<u16>,
+    pub timeout_seconds: Option<u16>,
 }
 
 impl Default for ApiConfig {
-    // default to openai
+    // default to ollama
     fn default() -> Self {
         ApiConfig::ollama()
     }
@@ -96,15 +96,6 @@ impl ApiConfig {
             .unwrap_or_default()
     }
 
-    pub fn get_timeout(&self) -> Option<Duration> {
-        let seconds = match self.timeout {
-            Some(t) if t > 0 => Some(t),
-            Some(0) => None,
-            _ => Some(30),
-        };
-        seconds.map(|t| Duration::from_secs(t.into()))
-    }
-
     pub(super) fn ollama() -> Self {
         ApiConfig {
             api_key_command: None,
@@ -112,7 +103,7 @@ impl ApiConfig {
             url: String::from("http://localhost:11434/api/chat"),
             default_model: Some(String::from("phi3")),
             version: None,
-            timeout: None,
+            timeout_seconds: Some(30),
         }
     }
 
@@ -123,7 +114,7 @@ impl ApiConfig {
             url: String::from("https://api.openai.com/v1/chat/completions"),
             default_model: Some(String::from("gpt-4")),
             version: None,
-            timeout: None,
+            timeout_seconds: Some(30),
         }
     }
 
@@ -134,7 +125,7 @@ impl ApiConfig {
             url: String::from("https://api.mistral.ai/v1/chat/completions"),
             default_model: Some(String::from("mistral-medium")),
             version: None,
-            timeout: None,
+            timeout_seconds: Some(30),
         }
     }
 
@@ -145,7 +136,7 @@ impl ApiConfig {
             url: String::from("https://api.groq.com/openai/v1/chat/completions"),
             default_model: Some(String::from("llama3-70b-8192")),
             version: None,
-            timeout: None,
+            timeout_seconds: Some(30),
         }
     }
 
@@ -156,7 +147,7 @@ impl ApiConfig {
             url: String::from("https://api.anthropic.com/v1/messages"),
             default_model: Some(String::from("claude-3-opus-20240229")),
             version: Some(String::from("2023-06-01")),
-            timeout: None,
+            timeout_seconds: Some(30),
         }
     }
 }
@@ -167,7 +158,7 @@ pub(super) fn api_keys_path() -> PathBuf {
 
 pub(super) fn generate_api_keys_file() -> std::io::Result<()> {
     let mut api_config = HashMap::new();
-    api_config.insert(Api::Ollama.to_string(), ApiConfig::openai());
+    api_config.insert(Api::Ollama.to_string(), ApiConfig::ollama());
     api_config.insert(Api::Openai.to_string(), ApiConfig::openai());
     api_config.insert(Api::Mistral.to_string(), ApiConfig::mistral());
     api_config.insert(Api::Groq.to_string(), ApiConfig::groq());
