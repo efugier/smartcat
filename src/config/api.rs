@@ -64,8 +64,15 @@ pub struct ApiConfig {
     pub default_model: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub timeout_seconds: Option<u16>,
+    #[serde(
+        default = "default_timeout_seconds",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub timeout_seconds: Option<u32>,
+}
+
+pub(super) fn default_timeout_seconds() -> Option<u32> {
+    Some(180)
 }
 
 impl Default for ApiConfig {
@@ -103,7 +110,7 @@ impl ApiConfig {
             url: String::from("http://localhost:11434/api/chat"),
             default_model: Some(String::from("phi3")),
             version: None,
-            timeout_seconds: Some(30),
+            timeout_seconds: Some(180),
         }
     }
 
@@ -114,7 +121,7 @@ impl ApiConfig {
             url: String::from("https://api.openai.com/v1/chat/completions"),
             default_model: Some(String::from("gpt-4")),
             version: None,
-            timeout_seconds: Some(30),
+            timeout_seconds: None,
         }
     }
 
@@ -125,7 +132,7 @@ impl ApiConfig {
             url: String::from("https://api.mistral.ai/v1/chat/completions"),
             default_model: Some(String::from("mistral-medium")),
             version: None,
-            timeout_seconds: Some(30),
+            timeout_seconds: None,
         }
     }
 
@@ -136,7 +143,7 @@ impl ApiConfig {
             url: String::from("https://api.groq.com/openai/v1/chat/completions"),
             default_model: Some(String::from("llama3-70b-8192")),
             version: None,
-            timeout_seconds: Some(30),
+            timeout_seconds: None,
         }
     }
 
@@ -147,7 +154,7 @@ impl ApiConfig {
             url: String::from("https://api.anthropic.com/v1/messages"),
             default_model: Some(String::from("claude-3-opus-20240229")),
             version: Some(String::from("2023-06-01")),
-            timeout_seconds: Some(30),
+            timeout_seconds: None,
         }
     }
 }

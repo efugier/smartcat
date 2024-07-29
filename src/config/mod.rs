@@ -107,7 +107,7 @@ fn is_executable_in_path(executable_name: &str) -> bool {
 mod tests {
     use crate::{
         config::{
-            api::{api_keys_path, Api, ApiConfig},
+            api::{api_keys_path, default_timeout_seconds, Api, ApiConfig},
             ensure_config_files,
             prompt::{prompts_path, Prompt},
             resolve_config_path,
@@ -293,24 +293,21 @@ mod tests {
         // Check if the content matches the default values
 
         // API
-        assert_eq!(
-            api_config.get(&Prompt::default().api.to_string()),
-            Some(&ApiConfig::default())
-        );
-        assert_eq!(
-            api_config.get(&Api::Mistral.to_string()),
-            Some(&ApiConfig::mistral())
-        );
-
-        assert_eq!(
-            api_config.get(&Api::Groq.to_string()),
-            Some(&ApiConfig::groq())
-        );
-
-        assert_eq!(
-            api_config.get(&Api::Anthropic.to_string()),
-            Some(&ApiConfig::anthropic())
-        );
+        for (api, expected_config) in [
+            (Prompt::default().api.to_string(), ApiConfig::default()),
+            (Api::Mistral.to_string(), ApiConfig::mistral()),
+            (Api::Groq.to_string(), ApiConfig::groq()),
+            (Api::Anthropic.to_string(), ApiConfig::anthropic()),
+        ] {
+            let config = api_config.get(&api).unwrap();
+            assert_eq!(
+                ApiConfig {
+                    timeout_seconds: default_timeout_seconds(),
+                    ..expected_config
+                },
+                *config
+            );
+        }
 
         // Prompts
         let default_prompt = Prompt::default();

@@ -242,7 +242,7 @@ Three files are used:
 [ollama]  # local API, no key required
 url = "http://localhost:11434/api/chat"
 default_model = "phi3"
-timeout_seconds = 30
+timeout_seconds = 180  # default timeout if not specified
 
 [openai]  # each supported api has their own config section with api and url
 api_key = "<your_api_key>"
@@ -361,11 +361,13 @@ sc test -v -c src/**/*
 
 The recording is then sent to a speech to text model, the resulting transcript is finally added to the prompt and sent to the text model to get an answer.
 
-On linux:
-On Mac:
-On windows:
+On linux: TODO
+On Mac: TODO
+On windows: TODO
 
 To debug, you can check the `conversation.toml` file or listen to the `audio.wav` in the smart config home and see what the model heard and transcripted.
+
+This feature shoud be offered as an extra down the road, totally optional on install. PRs are welcomed!
 
 
 ## How to help?
