@@ -63,7 +63,7 @@ Now on how to get it.
 
 ### To use voice input
 
-**Only test on linux so far.** Any help is appreciated from the other platforms users.
+**Only tested on linux so far.** Any help is appreciated from the other platforms users.
 
 - On linux, make sure `arecord` is installed and `arecord --quiet audio.wav` record your audio until you ctrl-c it and produces no output to stdout.
 - On Mac, make sure `sox` is installed and `sox -t waveaudio 0 audio.wav ` record your audio until you ctrl-c it and produces no output to stdout.
@@ -354,6 +354,8 @@ sc test -v
 
 sc test -v -c src/**/*
 ```
+
+This could be a good accessiblity feature but I personnaly never use it and given its current state I am considering removing it.
 
 ## How does it work?
 
