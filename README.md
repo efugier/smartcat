@@ -153,7 +153,7 @@ nnoremap <leader>sc :'<,'>!sc
 
 #### Helix and Kakoune
 
-Same concept, different shortcut, simply press the pipe key to redirect the selection to `smarcat`.
+Same concept, different shortcut, simply press the pipe key to redirect the selection to `smartcat`.
 
 ```
 pipe:sc test -r
@@ -170,7 +170,7 @@ sc "my quick question"
 
 which will likely be **your fastest path to answer**: a shortcut to open your terminal (if you're not in it already), `sc` and you're set. No tab finding, no logins, no redirects etc.
 
-**To enhance coding:**
+**To help with coding:**
 
 select a struct
 
