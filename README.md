@@ -61,16 +61,6 @@ The minimum config requirement is a `default` prompt calling a setup API (either
 
 Now on how to get it.
 
-### To use voice input
-
-**Only tested on linux so far.** Any help is appreciated from the other platforms users.
-
-- On linux, make sure `arecord` is installed and `arecord --quiet audio.wav` record your audio until you ctrl-c it and produces no output to stdout.
-- On Mac, make sure `sox` is installed and `sox -t waveaudio 0 audio.wav ` record your audio until you ctrl-c it and produces no output to stdout.
-- On Windows, make sure `sox` is installed and `sox -t waveaudio 0 audio.wav` record your audio until you ctrl-c it and produces no output to stdout.
-
-If it doesn't work, please open an issue.
-
 ### With Cargo
 
 With an **up to date** [rust and cargo](https://www.rust-lang.org/tools/install) setup (you might consider running `rustup update`):
@@ -336,7 +326,7 @@ see [the config setup file](./src/config/mod.rs) for more details.
 
 ⚠️ Answers might be slow depending on your setup, you may want to try the third party APIs for an optimal workflow. Timeout is configurable and set to 30s by default.
 
-# Voice
+# Voice, deprecation in progress
 
 ⚠️ **Testing in progress** I only have a linux system and wasn't able to test the recording commands for other OS. The good news is you can make up your own that works and then plug it in the config.
 
