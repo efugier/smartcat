@@ -73,7 +73,7 @@ struct PromptParams {
     /// overrides which model (of the api) to use
     #[arg(short, long)]
     model: Option<String>,
-    /// temperature higher means answer further from the average
+    /// higher temperature  means answer further from the average
     #[arg(short, long)]
     temperature: Option<f32>,
     /// max number of chars to include, ask for user approval if more, 0 = no limit

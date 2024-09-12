@@ -90,7 +90,7 @@ Options:
   -v, --voice                      whether to use voice for input
       --api <API>                  overrides which api to hit [possible values: another-api-for-tests, ollama, anthropic, groq, mistral, openai]
   -m, --model <MODEL>              overrides which model (of the api) to use
-  -t, --temperature <TEMPERATURE>  temperature higher means answer further from the average
+  -t, --temperature <TEMPERATURE>  higher temperature  means answer further from the average
   -l, --char-limit <CHAR_LIMIT>    max number of chars to include, ask for user approval if more, 0 = no limit
   -c, --context <CONTEXT>...       glob patterns or list of files to use the content as context
                                    make sure it's the last arg.
