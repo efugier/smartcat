@@ -240,12 +240,13 @@ default_model = "gpt-4-turbo-preview"
 url = "https://api.openai.com/v1/chat/completions"
 
 [mistral]
-api_key_command = "pass mistral/api_key"  # you can use a command to grab the key
+# you can use a command to grab the key, requires a working `sh` command
+api_key_command = "pass mistral/api_key"
 default_model = "mistral-medium"
 url = "https://api.mistral.ai/v1/chat/completions"
 
 [groq]
-api_key_command = "pass groq/api_key"
+api_key_command = "echo $MY_GROQ_API_KEY"
 default_model = "llama3-70b-8192"
 url = "https://api.groq.com/openai/v1/chat/completions"
 
