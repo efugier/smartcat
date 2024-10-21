@@ -88,12 +88,19 @@ impl ApiConfig {
             .clone()
             .or_else(|| {
                 self.api_key_command.clone().map(|command| {
-                    let output = std::process::Command::new("sh")
-                        .arg("-c")
-                        .arg(command)
-                        .output()
-                        .expect("Failed to run the api command")
-                        .stdout;
+                    let output = if cfg!(windows) {
+                        std::process::Command::new("cmd")
+                            .arg("/c")
+                            .arg(command)
+                            .output()
+                    } else {
+                        std::process::Command::new("sh")
+                            .arg("-c")
+                            .arg(command)
+                            .output()
+                    }
+                    .expect("Failed to run the api command")
+                    .stdout;
                     String::from_utf8(output)
                         .expect("Invalid UTF-8 from command")
                         .trim()
