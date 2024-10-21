@@ -1182,7 +1182,7 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
 name = "smartcat"
-version = "1.7.1"
+version = "1.7.2"
 dependencies = [
  "clap",
  "device_query",

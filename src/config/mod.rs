@@ -42,8 +42,8 @@ pub fn ensure_config_files() -> std::io::Result<()> {
     if !prompts_path().exists() {
         if interactive {
             println!(
-                "Prompt config file not found at {:?}, generating one.\n...",
-                prompts_path().into_os_string()
+                "Prompt config file not found at {}, generating one.\n...",
+                prompts_path().display()
             );
         }
         generate_prompts_file()?
@@ -51,16 +51,16 @@ pub fn ensure_config_files() -> std::io::Result<()> {
 
     if !voice_config_path().exists() {
         println!(
-            "Voice config file not found at {:?}, generating one.\n...",
-            voice_config_path().into_os_string()
+            "Voice config file not found at {}, generating one.\n...",
+            voice_config_path().display()
         );
         generate_voice_file().expect("Unable to generate config files");
     };
 
     if !api_keys_path().exists() {
         println!(
-            "API config file not found at {:?}, generating one.\n...",
-            api_keys_path().into_os_string()
+            "API config file not found at {}, generating one.\n...",
+            api_keys_path().display()
         );
         generate_api_keys_file().expect("Unable to generate config files");
         if interactive {
