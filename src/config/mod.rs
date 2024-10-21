@@ -156,7 +156,13 @@ mod tests {
         let original_value = env::var(CUSTOM_CONFIG_ENV_VAR);
 
         env::remove_var(CUSTOM_CONFIG_ENV_VAR);
-        let home_dir = env::var("HOME").expect("HOME not defined");
+        let home_dir = if cfg!(windows) {
+            std::env::var("USERPROFILE")
+        } else {
+            std::env::var("HOME")
+        }
+        .expect("HOME not defined");
+
         let default_path = PathBuf::new().join(home_dir).join(DEFAULT_CONFIG_PATH);
         let result = resolve_config_path();
 
