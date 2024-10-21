@@ -213,7 +213,7 @@ the previous step with `-e -r`.
 
 # Configuration
 
-- by default lives at `$HOME/.config/smartcat`
+- by default lives at `$HOME/.config/smartcat` or `%USERPROFILE%/.config/smartcat` on windows
 - the directory can be set using the `SMARTCAT_CONFIG_PATH` environement variable
 - use `#[<input>]` as the placeholder for input when writing prompts, if none is provided, it will be automatically added at the end of the last user message
 - the default model is a local `phi3` ran with ollama but I recommend trying the latest ones and see which one works best for you;
@@ -327,9 +327,11 @@ see [the config setup file](./src/config/mod.rs) for more details.
 
 ⚠️ Answers might be slow depending on your setup, you may want to try the third party APIs for an optimal workflow. Timeout is configurable and set to 30s by default.
 
-# Voice, deprecation in progress
+# Voice
 
-⚠️ **Testing in progress** I only have a linux system and wasn't able to test the recording commands for other OS. The good news is you can make up your own that works and then plug it in the config.
+⚠️ **Deprecation in progress**
+
+I only have a linux system and wasn't able to test the recording commands for other OS. The good news is you can make up your own that works and then plug it in the config.
 
 Use the `-v` flag to ask for voice input then press space to end it. It will replace the prompt customization arg.
 

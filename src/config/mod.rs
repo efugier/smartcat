@@ -19,12 +19,20 @@ const CUSTOM_CONFIG_ENV_VAR: &str = "SMARTCAT_CONFIG_PATH";
 fn resolve_config_path() -> PathBuf {
     if let Ok(custom_path) = std::env::var(CUSTOM_CONFIG_ENV_VAR) {
         PathBuf::from(custom_path)
-    } else if let Ok(home_dir) = std::env::var("HOME") {
-        PathBuf::from(home_dir).join(DEFAULT_CONFIG_PATH)
     } else {
-        panic!(
-            "Could not determine default config path. Set either ${CUSTOM_CONFIG_ENV_VAR} or $HOME"
-        )
+        let home_dir = if cfg!(windows) {
+            std::env::var("USERPROFILE")
+        } else {
+            std::env::var("HOME")
+        };
+
+        match home_dir {
+            Ok(dir) => PathBuf::from(dir).join(DEFAULT_CONFIG_PATH),
+            Err(_) => panic!(
+                "Could not determine default config path. Set either ${CUSTOM_CONFIG_ENV_VAR} or {} environment variable",
+                if cfg!(windows) { "%USERPROFILE%" } else { "$HOME" }
+            ),
+        }
     }
 }
 
