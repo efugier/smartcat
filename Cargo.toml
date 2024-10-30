@@ -25,9 +25,7 @@ serde_json = "1"
 toml = "0"
 ureq = { version="2", features = ["json"] }
 env_logger = "0"
-# device_query = { version = "2", optional = true }
 reqwest = { version = "0", features = ["json", "blocking", "multipart"] }
-device_query = "2"
 
 [dev-dependencies]
 tempfile = "3"
