@@ -1,6 +1,6 @@
 [package]
 name = "smartcat"
-version = "1.7.2"
+version = "2.0.0"
 authors = ["Emilien Fugier <mail@emilienfugier.net>"]
 description = '''
 Putting a brain behind `cat`.
