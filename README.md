@@ -50,7 +50,6 @@ Answers might be slow depending on your setup, you may want to try the third par
     - [Example workflows](#example-workflows)
 - [Configuration](#configuration) ← please read this carefully
     - [Ollama setup](#ollama-setup) ← easiest way to get running for free
-- [Voice](#voice)
 - [How to help?](./CONTRIBUTING.md)
 
 ## Installation
@@ -87,7 +86,6 @@ Arguments:
 Options:
   -e, --extend-conversation        whether to extend the previous conversation or start a new one
   -r, --repeat-input               whether to repeat the input before the output, useful to extend instead of replacing
-  -v, --voice                      whether to use voice for input
       --api <API>                  overrides which api to hit [possible values: another-api-for-tests, ollama, anthropic, groq, mistral, openai]
   -m, --model <MODEL>              overrides which model (of the api) to use
   -t, --temperature <TEMPERATURE>  higher temperature  means answer further from the average
@@ -106,8 +104,6 @@ The key to make this work seamlessly is a good default prompt that tells the mod
 
 ```
 sc "say hi"  # just ask (uses default prompt template)
-
-sc -v  # use your voice to ask (then press <space> to stop the recording)
 
 sc test                         # use templated prompts
 sc test "and parametrize them"  # extend them on the fly
@@ -307,14 +303,6 @@ content ='''Write tests using pytest for the following code. Parametrize it if a
 '''
 ```
 
-```toml
-url = "https://api.openai.com/v1/audio/transcriptions"
-# make sure this command fit you OS and works on its own
-recording_command = "arecord -f S16_LE --quiet <audio_file_path_placeholder>"
-model = "whisper-1"
-api = "openai"
-```
-
 see [the config setup file](./src/config/mod.rs) for more details.
 
 ## Ollama setup
@@ -326,44 +314,6 @@ see [the config setup file](./src/config/mod.rs) for more details.
 5. `smartcat` will now be able to reach your local ollama, enjoy!
 
 ⚠️ Answers might be slow depending on your setup, you may want to try the third party APIs for an optimal workflow. Timeout is configurable and set to 30s by default.
-
-# Voice
-
-⚠️ **Deprecation in progress**
-
-I only have a linux system and wasn't able to test the recording commands for other OS. The good news is you can make up your own that works and then plug it in the config.
-
-Use the `-v` flag to ask for voice input then press space to end it. It will replace the prompt customization arg.
-
-- uses openai whisper
-- make sure your `recording_command` field works in your termimal command, it should create a wav file
-- requires you to have an openai key in your `.api_keys.toml`
-- you can still use any prompt template or text model to get your output
-
-```
-sc -v
-
-sc test -v
-
-sc test -v -c src/**/*
-```
-
-This could be a good accessiblity feature but I personnaly never use it and given its current state I am considering removing it.
-
-## How does it work?
-
-`smartcat` call an external program that handles the voice recording and instructs it to save the result in a wav file. It then listens to keyboard inputs and stops the recording when space is pressed.
-
-The recording is then sent to a speech to text model, the resulting transcript is finally added to the prompt and sent to the text model to get an answer.
-
-On linux: TODO
-On Mac: TODO
-On windows: TODO
-
-To debug, you can check the `conversation.toml` file or listen to the `audio.wav` in the smart config home and see what the model heard and transcripted.
-
-This feature shoud be offered as an extra down the road, totally optional on install. PRs are welcomed!
-
 
 ## How to help?
 

@@ -1,13 +1,11 @@
 pub mod api;
 pub mod prompt;
-pub mod voice;
 
 use std::{path::PathBuf, process::Command};
 
 use self::{
     api::{api_keys_path, generate_api_keys_file, get_api_config},
     prompt::{generate_prompts_file, get_prompts, prompts_path},
-    voice::{generate_voice_file, voice_config_path},
 };
 use crate::utils::is_interactive;
 
@@ -48,14 +46,6 @@ pub fn ensure_config_files() -> std::io::Result<()> {
         }
         generate_prompts_file()?
     }
-
-    if !voice_config_path().exists() {
-        println!(
-            "Voice config file not found at {}, generating one.\n...",
-            voice_config_path().display()
-        );
-        generate_voice_file().expect("Unable to generate config files");
-    };
 
     if !api_keys_path().exists() {
         println!(
@@ -118,9 +108,7 @@ mod tests {
             api::{api_keys_path, default_timeout_seconds, Api, ApiConfig},
             ensure_config_files,
             prompt::{prompts_path, Prompt},
-            resolve_config_path,
-            voice::{voice_config_path, VoiceConfig},
-            CUSTOM_CONFIG_ENV_VAR, DEFAULT_CONFIG_PATH,
+            resolve_config_path, CUSTOM_CONFIG_ENV_VAR, DEFAULT_CONFIG_PATH,
         },
         utils::IS_NONINTERACTIVE_ENV_VAR,
     };
@@ -184,11 +172,9 @@ mod tests {
 
         let api_keys_path = api_keys_path();
         let prompts_path = prompts_path();
-        let voice_path = voice_config_path();
 
         assert!(!api_keys_path.exists());
         assert!(!prompts_path.exists());
-        assert!(!voice_path.exists());
 
         let result = ensure_config_files();
 
@@ -201,7 +187,6 @@ mod tests {
 
         assert!(api_keys_path.exists());
         assert!(prompts_path.exists());
-        assert!(voice_path.exists());
 
         Ok(())
     }
@@ -217,7 +202,6 @@ mod tests {
 
         let api_keys_path = api_keys_path();
         let prompts_path = prompts_path();
-        let voice_path = voice_config_path();
 
         // Precreate files with some content
         let mut api_keys_file = fs::File::create(&api_keys_path)?;
@@ -225,9 +209,6 @@ mod tests {
 
         let mut prompts_file = fs::File::create(&prompts_path)?;
         prompts_file.write_all(b"Some prompts data")?;
-
-        let mut voice_file = fs::File::create(&voice_path)?;
-        voice_file.write_all(b"Some voice data")?;
 
         let result = ensure_config_files();
 
@@ -242,7 +223,6 @@ mod tests {
         // Check if files still exist
         assert!(api_keys_path.exists());
         assert!(prompts_path.exists());
-        assert!(voice_path.exists());
 
         // Check if the contents remain unchanged
         let mut api_keys_content = String::new();
@@ -252,10 +232,6 @@ mod tests {
         let mut prompts_content = String::new();
         fs::File::open(&prompts_path)?.read_to_string(&mut prompts_content)?;
         assert_eq!(prompts_content, "Some prompts data".to_string());
-
-        let mut voice_content = String::new();
-        fs::File::open(&voice_path)?.read_to_string(&mut voice_content)?;
-        assert_eq!(voice_content, "Some voice data".to_string());
 
         Ok(())
     }
@@ -271,11 +247,9 @@ mod tests {
 
         let api_keys_path = api_keys_path();
         let prompts_path = prompts_path();
-        let voice_path = voice_config_path();
 
         assert!(!api_keys_path.exists());
         assert!(!prompts_path.exists());
-        assert!(!voice_path.exists());
 
         let result = ensure_config_files();
 
@@ -289,7 +263,6 @@ mod tests {
         // Read back the files and deserialize
         let api_config_contents = fs::read_to_string(&api_keys_path)?;
         let prompts_config_contents = fs::read_to_string(&prompts_path)?;
-        let voice_file_content = fs::read_to_string(&voice_path)?;
 
         // Deserialize contents to expected data structures
         // TODO: would be better to use `get_config` and `get_prompts` but
@@ -300,9 +273,6 @@ mod tests {
 
         let prompt_config: HashMap<String, Prompt> =
             toml::from_str(&prompts_config_contents).expect("Failed to deserialize prompts config");
-
-        let voice_config: VoiceConfig =
-            toml::from_str(&voice_file_content).expect("Failed to deserialize voice config");
 
         // Check if the content matches the default values
 
@@ -329,9 +299,6 @@ mod tests {
 
         let empty_prompt = Prompt::empty();
         assert_eq!(prompt_config.get("empty"), Some(&empty_prompt));
-
-        // Voice
-        assert_eq!(voice_config, VoiceConfig::default());
 
         Ok(())
     }

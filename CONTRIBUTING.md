@@ -23,19 +23,8 @@ src/
 │   │   # config structs for API config definition (url, key...)
 │   ├── api.rs
 │   │   # config structs for prompt defition (messages, model, temperature...)
-│   ├── prompt.rs
-│   │   # config structs for voice config (model, url, voice recording command...)
-│   └── voice.rs
-│   # voice api related code (request, adapters)
-├── voice
-│   │   # orchestrate the voice recording and request
-│   ├── mod.rs
-│   │   # start and stop the recording program
-│   ├── recording.rs
-│   │   # make the request to the api and read the result
-│   ├── api_call.rs
-│   │   # structs to parse and extract the message from third party answers
-│   └── response_schemas.rs
+│   └── prompt.rs
+│   # text api related code (request, adapters)
 └── text
     │   # make third party requests and read the result
     ├── mod.rs
@@ -72,21 +61,6 @@ main
 <-
 # save the enriched prompt as last conversation
 # exit
-```
-
-**Voice**
-
-```python
-main 
--> prompt_customization::customize_prompt
--> voice::record_voice_and_get_transcript
-   -> voice::recording::start_recording
-   -> voice::recording::strop_recording
-   -> voice::api_call::post_audio_and_get_transcript
-<-
--> text::process_input_with_request
-  -> text::api_call::post_prompt_and_get_answer
-<-
 ```
 
 ### Testing

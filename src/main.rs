@@ -2,7 +2,6 @@ mod config;
 mod prompt_customization;
 mod text;
 mod utils;
-mod voice;
 
 use crate::config::{
     api::Api,
@@ -57,9 +56,6 @@ struct Cli {
     /// whether to repeat the input before the output, useful to extend instead of replacing
     #[arg(short, long)]
     repeat_input: bool,
-    /// whether to use voice for input
-    #[arg(short, long)]
-    voice: bool,
     #[command(flatten)]
     prompt_params: PromptParams,
 }
@@ -122,17 +118,7 @@ fn main() {
         // if it doesn't use default prompt and treat that first arg as customization text
         get_default_and_or_custom_prompt(&args, &mut prompt_customizaton_text)
     } else {
-        if args.voice {
-            if args.input_or_template_ref.is_some() {
-                panic!(
-                    "Invalid parameters, when extending conversation and using voice you can't provide additional input args.\n\
-                    Use `sc -e -v`"
-                );
-            }
-            prompt_customizaton_text = voice::record_voice_and_get_transcript();
-        } else {
-            prompt_customizaton_text = args.input_or_template_ref;
-        }
+        prompt_customizaton_text = args.input_or_template_ref;
         if args.input_if_template_ref.is_some() {
             panic!(
                 "Invalid parameters, cannot provide a config ref when extending a conversation.\n\
@@ -181,7 +167,6 @@ fn main() {
 /// second arg -> input_if_config_ref
 /// if first arg is a prompt name, get that prompt and use second arg as input
 /// if not, use default prompt, use first arg as input and forbid second arg
-/// when using voice, only a prompt name can be provided
 fn get_default_and_or_custom_prompt(
     args: &Cli,
     prompt_customization_text: &mut Option<String>,
@@ -201,16 +186,7 @@ fn get_default_and_or_custom_prompt(
     if let Some(prompt) = prompts.remove(&input_or_config_ref) {
         if args.input_if_template_ref.is_some() {
             // first arg matching a prompt and second one is customization
-            if args.voice {
-                panic!(
-                    "Invalid parameters, when using voice, either provide a valid ref to a config prompt or nothing at all.\n\
-                    Use `sc -v <config_ref>` or `sc -v`"
-                );
-            }
             *prompt_customization_text = args.input_if_template_ref.clone()
-        }
-        if args.voice {
-            *prompt_customization_text = voice::record_voice_and_get_transcript();
         }
         prompt
     } else {
@@ -220,11 +196,6 @@ fn get_default_and_or_custom_prompt(
             panic!(
                 "Invalid parameters, either provide a valid ref to a config prompt then an input, or only an input.\n\
                 Use `sc <config_ref> \"<your_prompt\"` or `sc \"<your_prompt>\"`"
-            );
-        } else if args.voice {
-            panic!(
-                "Invalid parameters, when using voice, either provide a valid ref to a config prompt or nothing at all.\n\
-                Use `sc -v <config_ref>` or `sc -v`"
             );
         }
 
