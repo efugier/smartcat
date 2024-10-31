@@ -37,8 +37,8 @@ What makes it special:
 Currently supports the following APIs:
 
 - Local runs with **[Ollama](https://github.com/ollama/ollama/blob/main/docs/README.md)** or any server compliant with its format; see the [Ollama setup](#ollama-setup) section for the free and easiest way to get started!  
-Answers might be slow depending on your setup; you may want to try the third-party APIs for an optimal workflow.
-- **[OpenAI](https://platform.openai.com/docs/models/overview)**, **[Mistral AI](https://docs.mistral.ai/getting-started/models/)**, **[Anthropic](https://docs.anthropic.com/claude/docs/models-overview)**, **[Groq](https://console.groq.com/docs/models)**
+_(Answers might be slow depending on your setup; you may want to try the third-party APIs for an optimal workflow.)_
+- **[Anthropic](https://docs.anthropic.com/claude/docs/models-overview)**, **[Groq](https://console.groq.com/docs/models)**, **[Mistral AI](https://docs.mistral.ai/getting-started/models/)**, **[OpenAI](https://platform.openai.com/docs/models/overview)**
 
 # Table of Contents
 
