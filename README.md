@@ -43,7 +43,8 @@ Answers might be slow depending on your setup, you may want to try the third par
 
 # Table of Contents
 
-- [Installation](#installation-)
+- [Installation](#installation)
+- [Recommended models](#recommended-models)
 - [Usage](#usage)
 - [A few examples to get started 🐈‍⬛](#a-few-examples-to-get-started-)
   - [Integrating with editors](#integrating-with-editors)
@@ -73,6 +74,10 @@ run this command again to update `smartcat`.
 ### By downloading the binary
 
 Chose the one compiled for your platform on the [release page](https://github.com/efugier/smartcat/releases).
+
+## Recommended Models
+
+Currently the best results are achieved with [Claude Sonnet 3.5 from Anthropic](https://www.anthropic.com/claude/sonnet).
 
 ## Usage
 
