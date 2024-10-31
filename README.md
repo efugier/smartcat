@@ -17,29 +17,28 @@
 
 # smartcat (sc)
 
-Puts a brain behind `cat`! CLI interface to bring language models in the Unix ecosystem and allow terminal power users to make the most out of llms while keeping full control.
+Puts a brain behind `cat`! CLI interface to bring language models into the Unix ecosystem and allow terminal power users to make the most out of LLMs while maintaining full control.
 
 <p align="center">
   <img src="assets/workflow.gif" />
 </p>
 
-
 What makes it special:
 
-- made for power users, tailor the config to reduce overhead on your most frequent tasks;
-- minimalist, built according to the unix philosophy with terminal and editor integration in mind;
-- good io handling to insert user input in prompts and use the result in cli-based workflows;
-- built-in partial prompt to make the model play nice as a cli tool;
-- full configurability on which API, LLM version and temperature you use;
-- write and save your own prompt templates for faster reccuring tasks (simplify, optimize, tests, etc);
-- conversation support;
-- glob expressions to include context files.
+- Made for power users; tailor the config to reduce overhead on your most frequent tasks
+- Minimalist, built according to the Unix philosophy with terminal and editor integration in mind
+- Good I/O handling to insert user input in prompts and use the result in CLI-based workflows
+- Built-in partial prompt to make the model play nice as a CLI tool
+- Full configurability on which API, LLM version, and temperature you use
+- Write and save your own prompt templates for faster recurring tasks (simplify, optimize, tests, etc.)
+- Conversation support
+- Glob expressions to include context files
 
 Currently supports the following APIs:
 
-- Local runs with **[Ollama](https://github.com/ollama/ollama/blob/main/docs/README.md)** or any server compliant with its format, see the [Ollama setup](#ollama-setup) section for the free and easiest way to get started!  
-Answers might be slow depending on your setup, you may want to try the third party APIs for an optimal workflow.
-- **[OpenAi](https://platform.openai.com/docs/models/overview)**, **[Mistral AI](https://docs.mistral.ai/getting-started/models/)**, **[Anthropic](https://docs.anthropic.com/claude/docs/models-overview)**, **[Groq](https://console.groq.com/docs/models)**.
+- Local runs with **[Ollama](https://github.com/ollama/ollama/blob/main/docs/README.md)** or any server compliant with its format; see the [Ollama setup](#ollama-setup) section for the free and easiest way to get started!  
+Answers might be slow depending on your setup; you may want to try the third-party APIs for an optimal workflow.
+- **[OpenAI](https://platform.openai.com/docs/models/overview)**, **[Mistral AI](https://docs.mistral.ai/getting-started/models/)**, **[Anthropic](https://docs.anthropic.com/claude/docs/models-overview)**, **[Groq](https://console.groq.com/docs/models)**
 
 # Table of Contents
 
@@ -55,25 +54,25 @@ Answers might be slow depending on your setup, you may want to try the third par
 
 ## Installation
 
-On the first run (`sc`), it will ask you to generate some default configuration files and give pointers on how to finalize the install (see the [configuration section](#Configuration)).
+On the first run (`sc`), it will ask you to generate default configuration files and provide guidance on finalizing the installation (see the [Configuration](#Configuration) section).
 
-The minimum config requirement is a `default` prompt calling a setup API (either remote with api key or local with ollama).
+The minimum configuration requirement is a `default` prompt that calls a setup API (either remote with an API key or local with Ollama).
 
 Now on how to get it.
 
 ### With Cargo
 
-With an **up to date** [rust and cargo](https://www.rust-lang.org/tools/install) setup (you might consider running `rustup update`):
+With an up-to-date Rust and Cargo setup (you might consider running `rustup update`):
 
 ```
 cargo install smartcat
 ```
 
-run this command again to update `smartcat`.
+Run this command again to update `smartcat`.
 
 ### By downloading the binary
 
-Chose the one compiled for your platform on the [release page](https://github.com/efugier/smartcat/releases).
+Choose the one compiled for your platform on the [release page](https://github.com/efugier/smartcat/releases).
 
 ## Recommended Models
 
@@ -91,7 +90,7 @@ Arguments:
 Options:
   -e, --extend-conversation        whether to extend the previous conversation or start a new one
   -r, --repeat-input               whether to repeat the input before the output, useful to extend instead of replacing
-      --api <API>                  overrides which api to hit [possible values: another-api-for-tests, ollama, anthropic, groq, mistral, openai]
+      --api <API>                  overrides which api to hit [possible values: ollama, anthropic, groq, mistral, openai]
   -m, --model <MODEL>              overrides which model (of the api) to use
   -t, --temperature <TEMPERATURE>  higher temperature  means answer further from the average
   -l, --char-limit <CHAR_LIMIT>    max number of chars to include, ask for user approval if more, 0 = no limit
@@ -101,9 +100,9 @@ Options:
   -V, --version                    Print version
 ```
 
-You can use it to **accomplish tasks in the CLI** but **also in your editors** (if they are good unix citizens, i.e. work with shell commands and text streams) to complete, refactor, write tests... anything!
+You can use it to accomplish tasks in the CLI but also in your editors (if they are good Unix citizens, i.e., work with shell commands and text streams) to complete, refactor, write tests... anything!
 
-The key to make this work seamlessly is a good default prompt that tells the model to behave like a CLI tool an not write any unwanted text like markdown formatting or explanations.
+**The key to making this work seamlessly is a good default prompt that tells the model to behave like a CLI tool** and not write any unwanted text like markdown formatting or explanations.
 
 ## A few examples to get started 🐈‍⬛
 
@@ -123,7 +122,7 @@ sc -e "use a more informal tone" -t 2 >> fr.md  # extend the conversation and ra
 
 ### Integrating with editors
 
-The key for a good integration in editors is a good default prompt (or set of) combined with the `-p` flag for precising the task at hand.
+The key for good integration in editors is a good default prompt (or set of prompts) combined with the `-p` flag for specifying the task at hand.
 The `-r` flag can be used to decide whether to replace or extend the selection.
 
 #### Vim
@@ -214,18 +213,18 @@ the previous step with `-e -r`.
 
 # Configuration
 
-- by default lives at `$HOME/.config/smartcat` or `%USERPROFILE%/.config/smartcat` on windows
-- the directory can be set using the `SMARTCAT_CONFIG_PATH` environment variable
-- use `#[<input>]` as the placeholder for input when writing prompts, if none is provided, it will be automatically added at the end of the last user message
-- the default model is a local `phi3` ran with ollama but I recommend trying the latest ones and see which one works best for you;
-- the prompt named `default` will be the one used by default.
-- you can play with the temperature and set a default for each prompt depending on its use case;
+- By default, lives at `$HOME/.config/smartcat` or `%USERPROFILE%\.config\smartcat` on Windows
+- The directory can be set using the `SMARTCAT_CONFIG_PATH` environment variable
+- Use `#[<input>]` as the placeholder for input when writing prompts; if none is provided, it will be automatically added at the end of the last user message
+- The default model is a local `phi3` run with Ollama, but it's recommended to try the latest models and see which one works best for you
+- The prompt named `default` will be used by default
+- You can adjust the temperature and set a default for each prompt depending on its use case
 
 Three files are used:
 
-- `.api_configs.toml` stores your credentials, you need at least one provider with API with key or a local ollama setup;
-- `prompts.toml` stores you prompt templates, you need at least the `default` prompt;
-- `conversation.toml` stores the latest chat if you need to continue it, it's automanaged but you can make backups if you want.
+- `.api_configs.toml` stores your credentials; you need at least one provider with API key or a local Ollama setup
+- `prompts.toml` stores your prompt templates; you need at least the `default` prompt
+- `conversation.toml` stores the latest chat if you need to continue it; it's auto-managed, but you can make backups if desired
 
 `.api_configs.toml`
 
@@ -268,13 +267,9 @@ model = "phi3"  # each prompt may define its own model
 [[default.messages]]  # then you can list messages
 role = "system"
 content = """\
-You are an extremely skilled programmer with a keen eye for detail and an emphasis on readable code. \
-You have been tasked with acting as a smart version of the cat unix program. You take text and a prompt in and write text out. \
-For that reason, it is of crucial importance to just write the desired output. Do not under any circumstance write any comment or thought \
-as you output will be piped into other programs. Do not write the markdown delimiters for code as well. \
-Sometimes you will be asked to implement or extend some input code. Same thing goes here, write only what was asked because what you write will \
-be directly added to the user's editor. \
-Never ever write ``` around the code. \
+You are an expert programmer and a shell master. You value code efficiency and clarity above all things. \
+What you write will be piped in and out of cli programs so you do not explain anything unless explicitely asked to. \
+Never write ``` around your answer, provide only the result of the task you are given. Preserve input formatting.\
 """
 
 [empty]  # always nice to have an empty prompt available
@@ -289,13 +284,9 @@ temperature = 0.0
 [[test.messages]]
 role = "system"
 content = """\
-You are an extremely skilled programmer with a keen eye for detail and an emphasis on readable code. \
-You have been tasked with acting as a smart version of the cat unix program. You take text and a prompt in and write text out. \
-For that reason, it is of crucial importance to just write the desired output. Do not under any circumstance write any comment or thought \
-as you output will be piped into other programs. Do not write the markdown delimiters for code as well. \
-Sometimes you will be asked to implement or extend some input code. Same thing goes here, write only what was asked because what you write will \
-be directly added to the user's editor. \
-Never ever write ``` around the code. \
+You are an expert programmer and a shell master. You value code efficiency and clarity above all things. \
+What you write will be piped in and out of cli programs so you do not explain anything unless explicitely asked to. \
+Never write ``` around your answer, provide only the result of the task you are given. Preserve input formatting.\
 """
 
 [[test.messages]]
