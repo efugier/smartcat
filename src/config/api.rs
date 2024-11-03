@@ -20,6 +20,7 @@ pub enum Api {
     Groq,
     Mistral,
     Openai,
+    AzureOpenai,
 }
 
 impl FromStr for Api {
@@ -29,6 +30,7 @@ impl FromStr for Api {
         match s.to_lowercase().as_str() {
             "ollama" => Ok(Api::Ollama),
             "openai" => Ok(Api::Openai),
+            "azureopenai" => Ok(Api::AzureOpenai),
             "mistral" => Ok(Api::Mistral),
             "groq" => Ok(Api::Groq),
             "anthropic" => Ok(Api::Anthropic),
@@ -42,6 +44,7 @@ impl ToString for Api {
         match self {
             Api::Ollama => "ollama".to_string(),
             Api::Openai => "openai".to_string(),
+            Api::AzureOpenai => "azureopenai".to_string(),
             Api::Mistral => "mistral".to_string(),
             Api::Groq => "groq".to_string(),
             Api::Anthropic => "anthropic".to_string(),
@@ -132,6 +135,17 @@ impl ApiConfig {
         }
     }
 
+    pub(super) fn azureopenai() -> Self {
+        ApiConfig {
+            api_key_command: None,
+            api_key: None,
+            url: String::from("https://your-azure-endpoint.azure.com/openai/deployments/your-deployment-id/chat/completions?api-version=2024-06-01"),
+            default_model: Some(String::from("gpt-4o")),
+            version: None,
+            timeout_seconds: Some(180),
+        }
+    }
+
     pub(super) fn mistral() -> Self {
         ApiConfig {
             api_key_command: None,
@@ -174,6 +188,7 @@ pub(super) fn generate_api_keys_file() -> std::io::Result<()> {
     let mut api_config = HashMap::new();
     api_config.insert(Api::Ollama.to_string(), ApiConfig::ollama());
     api_config.insert(Api::Openai.to_string(), ApiConfig::openai());
+    api_config.insert(Api::AzureOpenai.to_string(), ApiConfig::azureopenai());
     api_config.insert(Api::Mistral.to_string(), ApiConfig::mistral());
     api_config.insert(Api::Groq.to_string(), ApiConfig::groq());
     api_config.insert(Api::Anthropic.to_string(), ApiConfig::anthropic());
