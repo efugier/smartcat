@@ -49,7 +49,7 @@ pub fn post_prompt_and_get_answer(
         .expect("Unable to initialize HTTP client");
 
     let prompt_format = match prompt.api {
-        Api::Ollama | Api::Openai | Api::Mistral | Api::Groq => {
+        Api::Ollama | Api::Openai | Api::AzureOpenai | Api::Mistral | Api::Groq => {
             PromptFormat::OpenAi(OpenAiPrompt::from(prompt.clone()))
         }
         Api::Anthropic => PromptFormat::Anthropic(AnthropicPrompt::from(prompt.clone())),
@@ -67,6 +67,7 @@ pub fn post_prompt_and_get_answer(
             "Authorization",
             &format!("Bearer {}", &api_config.get_api_key()),
         ),
+        Api::AzureOpenai => request.header("api-key", &api_config.get_api_key()),
         Api::Anthropic => request
             .header("x-api-key", &api_config.get_api_key())
             .header(
@@ -80,7 +81,7 @@ pub fn post_prompt_and_get_answer(
 
     let response_text: String = match prompt.api {
         Api::Ollama => handle_api_response::<OllamaResponse>(request.send()?),
-        Api::Openai | Api::Mistral | Api::Groq => {
+        Api::Openai | Api::AzureOpenai | Api::Mistral | Api::Groq => {
             handle_api_response::<OpenAiResponse>(request.send()?)
         }
         Api::Anthropic => handle_api_response::<AnthropicResponse>(request.send()?),
