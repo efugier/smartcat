@@ -142,7 +142,7 @@ impl ApiConfig {
             url: String::from("https://your-azure-endpoint.azure.com/openai/deployments/your-deployment-id/chat/completions?api-version=2024-06-01"),
             default_model: Some(String::from("gpt-4o")),
             version: None,
-            timeout_seconds: Some(180),
+            timeout_seconds: None,
         }
     }
 
