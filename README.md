@@ -254,7 +254,7 @@ url = "https://api.groq.com/openai/v1/chat/completions"
 api_key = "<yet_another_api_key>"
 url = "https://api.anthropic.com/v1/messages"
 default_model = "claude-3-opus-20240229"
-version = "2023-06-01" # anthropic API version, see https://docs.anthropic.com/en/api/versioning
+version = "2023-06-01"  # anthropic API version, see https://docs.anthropic.com/en/api/versioning
 ```
 
 `prompts.toml`
