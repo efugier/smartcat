@@ -23,7 +23,7 @@ const DEFAULT_PROMPT_NAME: &str = "default";
 #[command(
     name = "smartcat (sc)",
     author = "Emilien Fugier",
-    version = "2.0.0",
+    version = "2.1.0",
     about = "Putting a brain behind `cat`. CLI interface to bring language models in the Unix ecosystem 🐈‍⬛",
     long_about = None,
     after_help = "Examples:
