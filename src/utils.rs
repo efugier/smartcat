@@ -1,3 +1,5 @@
+use regex::Regex;
+
 pub const IS_NONINTERACTIVE_ENV_VAR: &str = "SMARTCAT_NONINTERACTIVE";
 
 /// clean error logging
@@ -23,4 +25,14 @@ pub fn read_user_input() -> String {
         .read_line(&mut user_input)
         .expect("Failed to read line");
     user_input.trim().to_string()
+}
+
+// Validate the conversation name
+pub fn valid_conversation_name(s: &str) -> Result<String, String> {
+    let re = Regex::new(r"^[a-zA-Z0-9_-]+$").unwrap();
+    if re.is_match(s) {
+        Ok(s.to_string())
+    } else {
+        Err(format!("Invalid name: {}", s))
+    }
 }

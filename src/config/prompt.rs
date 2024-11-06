@@ -9,7 +9,7 @@ use std::path::PathBuf;
 use crate::config::{api::Api, resolve_config_path};
 
 const PROMPT_FILE: &str = "prompts.toml";
-const CONVERSATION_FILE: &str = "conversation.toml";
+const CONVERSATIONS_PATH: &str = "conversations/";
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 pub struct Prompt {
@@ -96,19 +96,31 @@ pub(super) fn prompts_path() -> PathBuf {
     resolve_config_path().join(PROMPT_FILE)
 }
 
-pub fn conversation_file_path() -> PathBuf {
-    resolve_config_path().join(CONVERSATION_FILE)
+// Get the path to the conversations directory
+pub fn conversations_path() -> PathBuf {
+    resolve_config_path().join(CONVERSATIONS_PATH)
 }
 
-pub fn get_last_conversation_as_prompt() -> Prompt {
-    let content = fs::read_to_string(conversation_file_path()).unwrap_or_else(|error| {
+// Get the path to a specific conversation file
+pub fn conversation_file_path(name: &str) -> PathBuf {
+    conversations_path().join(format!("{}.toml", name))
+}
+
+// Get the last conversation as a prompt, if it exists
+pub fn get_last_conversation_as_prompt(name: &str) -> Option<Prompt> {
+    let file_path = conversation_file_path(name);
+    if !file_path.exists() {
+        return None;
+    }
+
+    let content = fs::read_to_string(file_path).unwrap_or_else(|error| {
         panic!(
             "Could not read file {:?}, {:?}",
-            conversation_file_path(),
+            conversation_file_path(name),
             error
         )
     });
-    toml::from_str(&content).expect("failed to load the conversation file")
+    Some(toml::from_str(&content).expect("failed to load the conversation file"))
 }
 
 pub(super) fn generate_prompts_file() -> std::io::Result<()> {
@@ -135,4 +147,46 @@ pub fn get_prompts() -> HashMap<String, Prompt> {
     let content = fs::read_to_string(prompts_path())
         .unwrap_or_else(|error| panic!("Could not read file {:?}, {:?}", prompts_path(), error));
     toml::from_str(&content).expect("could not parse prompt file content")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    #[test]
+    fn test_conversation_file_path() {
+        let name = "test_conversation";
+        let file_path = conversation_file_path(name);
+        assert_eq!(
+            file_path.file_name().unwrap().to_str().unwrap(),
+            format!("{}.toml", name)
+        );
+        assert_eq!(file_path.parent().unwrap(), conversations_path());
+    }
+
+    #[test]
+    fn test_get_last_conversation_as_prompt() {
+        let name = "test_conversation";
+        let file_path = conversation_file_path(name);
+        let prompt = Prompt::default();
+
+        // Create a test conversation file
+        let toml_string = toml::to_string(&prompt).expect("Failed to serialize prompt");
+        fs::write(&file_path, toml_string).expect("Failed to write test conversation file");
+
+        let loaded_prompt = get_last_conversation_as_prompt(name);
+        assert_eq!(loaded_prompt, Some(prompt));
+
+        // Clean up the test conversation file
+        fs::remove_file(&file_path).expect("Failed to remove test conversation file");
+    }
+
+    #[test]
+    fn test_get_last_conversation_as_prompt_missing_file() {
+        let name = "nonexistent_conversation";
+        let loaded_prompt = get_last_conversation_as_prompt(name);
+        assert_eq!(loaded_prompt, None);
+    }
+
 }

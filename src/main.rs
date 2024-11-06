@@ -9,6 +9,7 @@ use crate::config::{
     prompt::{conversation_file_path, get_last_conversation_as_prompt, get_prompts, Prompt},
 };
 use prompt_customization::customize_prompt;
+use crate::utils::valid_conversation_name;
 
 use clap::{Args, Parser};
 use log::debug;
@@ -18,6 +19,7 @@ use std::io::{self, IsTerminal, Read, Write};
 use text::process_input_with_request;
 
 const DEFAULT_PROMPT_NAME: &str = "default";
+const DEFAULT_CONVERSATION_NAME: &str = "default";
 
 #[derive(Debug, Parser)]
 #[command(
@@ -56,6 +58,9 @@ struct Cli {
     /// whether to repeat the input before the output, useful to extend instead of replacing
     #[arg(short, long)]
     repeat_input: bool,
+    /// conversation name
+    #[arg(short, long, value_parser = valid_conversation_name)]
+    name: Option<String>,
     #[command(flatten)]
     prompt_params: PromptParams,
 }
@@ -104,6 +109,7 @@ fn main() {
     }
 
     let args = Cli::parse();
+    let name = args.name.as_deref().unwrap_or(DEFAULT_CONVERSATION_NAME);
 
     debug!("args: {:?}", args);
 
@@ -118,14 +124,18 @@ fn main() {
         // if it doesn't use default prompt and treat that first arg as customization text
         get_default_and_or_custom_prompt(&args, &mut prompt_customizaton_text)
     } else {
-        prompt_customizaton_text = args.input_or_template_ref;
+        prompt_customizaton_text = args.input_or_template_ref.clone();
         if args.input_if_template_ref.is_some() {
             panic!(
                 "Invalid parameters, cannot provide a config ref when extending a conversation.\n\
                 Use `sc -e \"<your_prompt>.\"`"
             );
         }
-        get_last_conversation_as_prompt()
+
+        match get_last_conversation_as_prompt(name) {
+            Some(prompt) => prompt,
+            None => get_default_and_or_custom_prompt(&args, &mut prompt_customizaton_text),
+        }
     };
 
     // if no text was piped, use the custom prompt as input
@@ -149,7 +159,7 @@ fn main() {
         Ok(prompt) => {
             let toml_string =
                 toml::to_string(&prompt).expect("Failed to serialize prompt after response.");
-            let mut file = fs::File::create(conversation_file_path())
+            let mut file = fs::File::create(conversation_file_path(name))
                 .expect("Failed to create the conversation save file.");
             file.write_all(toml_string.as_bytes())
                 .expect("Failed to write to the conversation file.");
@@ -203,4 +213,35 @@ fn get_default_and_or_custom_prompt(
             .remove(DEFAULT_PROMPT_NAME)
             .expect(&prompt_not_found_error)
     }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use crate::config::prompt::Prompt;
+
+    #[test]
+    fn test_get_last_conversation_as_prompt_missing_file() {
+        let args = Cli {
+            input_or_template_ref: Some("test_input".to_string()),
+            input_if_template_ref: None,
+            extend_conversation: true,
+            repeat_input: false,
+            name: Some("nonexistent_conversation".to_string()),
+            prompt_params: PromptParams::default(),
+        };
+        let mut prompt_customizaton_text = None;
+        let name = args.name.as_deref().unwrap_or(DEFAULT_CONVERSATION_NAME);
+
+        let prompt = get_last_conversation_as_prompt(name);
+
+        assert_eq!(prompt, None);
+
+        let default_prompt = get_default_and_or_custom_prompt(&args, &mut prompt_customizaton_text);
+        assert_eq!(default_prompt, Prompt::default());
+        assert_eq!(prompt_customizaton_text, Some("test_input".to_string()));
+
+    }
+
 }
