@@ -5,7 +5,7 @@ use std::{path::PathBuf, process::Command};
 
 use self::{
     api::{api_keys_path, generate_api_keys_file, get_api_config},
-    prompt::{generate_prompts_file, get_prompts, prompts_path, conversations_path},
+    prompt::{generate_prompts_file, get_prompts, prompts_path},
 };
 use crate::utils::is_interactive;
 
@@ -58,12 +58,6 @@ pub fn ensure_config_files() -> std::io::Result<()> {
         }
     };
 
-    // Create the conversations directory if it doesn't exist
-    if !conversations_path().exists() {
-        std::fs::create_dir_all(conversations_path())
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to create conversations directory: {}", e)))?;
-    }
-
     Ok(())
 }
 
@@ -113,7 +107,7 @@ mod tests {
         config::{
             api::{api_keys_path, default_timeout_seconds, Api, ApiConfig},
             ensure_config_files,
-            prompt::{prompts_path, conversations_path, Prompt},
+            prompt::{prompts_path, Prompt},
             resolve_config_path, CUSTOM_CONFIG_ENV_VAR, DEFAULT_CONFIG_PATH,
         },
         utils::IS_NONINTERACTIVE_ENV_VAR,
@@ -181,7 +175,6 @@ mod tests {
 
         assert!(!api_keys_path.exists());
         assert!(!prompts_path.exists());
-        assert!(!conversations_path().exists());
 
         let result = ensure_config_files();
 
@@ -194,7 +187,6 @@ mod tests {
 
         assert!(api_keys_path.exists());
         assert!(prompts_path.exists());
-        assert!(conversations_path().exists());
 
         Ok(())
     }

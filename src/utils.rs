@@ -33,6 +33,6 @@ pub fn valid_conversation_name(s: &str) -> Result<String, String> {
     if re.is_match(s) {
         Ok(s.to_string())
     } else {
-        Err(format!("Invalid name: {}", s))
+        Err(format!("Invalid conversation name: {}. Use only letters, numbers, underscores, and hyphens.", s))
     }
 }
