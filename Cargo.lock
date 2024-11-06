@@ -981,7 +981,7 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
 name = "smartcat"
-version = "2.1.0"
+version = "2.2.0"
 dependencies = [
  "clap",
  "env_logger",
