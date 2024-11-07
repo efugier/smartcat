@@ -29,10 +29,11 @@ pub fn read_user_input() -> String {
 
 // Validate the conversation name
 pub fn valid_conversation_name(s: &str) -> Result<String, String> {
+    let trimmed = s.trim();
     let re = Regex::new(r"^[a-zA-Z0-9_-]+$").unwrap();
-    if re.is_match(s) {
-        Ok(s.to_string())
+    if re.is_match(trimmed) {
+        Ok(trimmed.to_string())
     } else {
-        Err(format!("Invalid conversation name: {}. Use only letters, numbers, underscores, and hyphens.", s))
+        Err(format!("Invalid conversation name: {}. Use only letters, numbers, underscores, and hyphens.", trimmed))
     }
 }
