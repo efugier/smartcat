@@ -76,7 +76,7 @@ Choose the one compiled for your platform on the [release page](https://github.c
 
 ## Recommended Models
 
-Currently the best results are achieved with [Claude Sonnet 3.5 from Anthropic](https://www.anthropic.com/claude/sonnet). Costs about $2-3 a month for typical use.
+Currently the best results are achieved with APIs from Anthropic, Mistral or Openai. It costs about $2-3 a month for typical use with the best models.
 
 ## Usage
 
