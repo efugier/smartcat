@@ -10,7 +10,7 @@ use crate::config::{
 };
 use prompt_customization::customize_prompt;
 
-use clap::{Args, Parser};
+use clap::{Args, Parser, ValueEnum};
 use log::debug;
 use std::fs;
 use std::io::{self, IsTerminal, Read, Write};
@@ -58,6 +58,9 @@ struct Cli {
     repeat_input: bool,
     #[command(flatten)]
     prompt_params: PromptParams,
+    /// how to merge agrument input and stdin input if both are present
+    #[arg(long, value_enum, default_value = "append-stdin")]
+    merge: MergeStrategy,
 }
 
 #[derive(Debug, Default, Args)]
@@ -81,16 +84,25 @@ struct PromptParams {
     context: Vec<String>,
 }
 
+#[derive(Debug, Clone, Copy, ValueEnum, Default, Eq, PartialEq)]
+enum MergeStrategy {
+    PrependStdin,
+    AppendStdin,
+    IgnoreArgument,
+    #[default]
+    IgnoreStdin,
+}
+
 fn main() {
     env_logger::init();
 
     let stdin = io::stdin();
     let mut output = io::stdout();
-    let mut input = String::new();
 
     // case for testing
     // TODO: mock API and actually use the real processing
     if std::env::var("SMARTCAT_TEST").unwrap_or_default() == "1" {
+        let mut input = String::new();
         if let Err(e) = stdin
             .lock()
             .read_to_string(&mut input)
@@ -128,15 +140,32 @@ fn main() {
         get_last_conversation_as_prompt()
     };
 
-    // if no text was piped, use the custom prompt as input
-    if is_piped {
-        stdin.lock().read_to_string(&mut input).unwrap();
-    }
+    let stdin_content = match is_piped {
+        true => {
+            let mut buf = String::new();
 
-    if input.is_empty() {
-        input.push_str(&prompt_customizaton_text.unwrap_or_default());
-        prompt_customizaton_text = None;
-    }
+            stdin
+                .lock()
+                .read_to_string(&mut buf)
+                .expect("Failed to read from stdin");
+
+            match buf.is_empty() {
+                true => None,
+                false => Some(buf),
+            }
+        }
+        false => None,
+    };
+
+    let input = match (args.merge, stdin_content, prompt_customizaton_text.clone()) {
+        (MergeStrategy::PrependStdin, Some(stdin_text), Some(text)) => stdin_text + &text,
+        (MergeStrategy::AppendStdin, Some(stdin_text), Some(text)) => text + &stdin_text,
+        (MergeStrategy::IgnoreArgument, Some(stdin_text), _) => stdin_text,
+        (MergeStrategy::IgnoreStdin, _, Some(text)) => text,
+        (_, None, Some(text)) => text,
+        (_, Some(stdin_text), None) => stdin_text,
+        (_, None, None) => "".to_string(),
+    };
 
     debug!("input: {}", input);
     debug!("promt_customization_text: {:?}", prompt_customizaton_text);
